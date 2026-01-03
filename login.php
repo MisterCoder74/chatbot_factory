@@ -22,7 +22,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     if ($authenticated) {
         session_start();
         $_SESSION["user_id"] = $user_data["id"];
-        header("Location: dashboard.html");
+        header("Location: dashboard.php");
         exit;
     } else {
         echo "Invalid email, password, or account is not active.";

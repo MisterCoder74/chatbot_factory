@@ -38,7 +38,8 @@ file_put_contents("userdata.json", $updated_json_data);
 // Creazione delle cartelle dell'utente
 $rootpath = $user_id . '/';
 $subfolders = [
-'chatbots'
+'chatbots',
+'personas'
 ];
 
 // Creazione delle cartelle

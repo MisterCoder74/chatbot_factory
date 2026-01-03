@@ -42,9 +42,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $conf_data[0]['background_color'] = $background_color;
             $conf_data[0]['text_color'] = $text_color;
             $conf_data[0]['style_color'] = $style_color;
-            $conf_data[0]['chatbot_name'] = $chatbot_name;
-            $conf_data[0]['header'] = $chatbot_heading;
-            $conf_data[0]['chatbot_apikey'] = $chatbot_apikey;    
+            $conf_data[0]['persona_name'] = $persona_name;
+            $conf_data[0]['header'] = $persona_heading;
+            $conf_data[0]['persona_apikey'] = $persona_apikey;    
         }
 
         if (file_put_contents($destination_conf, json_encode($conf_data, JSON_PRETTY_PRINT)) === false) {

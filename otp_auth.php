@@ -23,7 +23,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         file_put_contents("userdata.json", $updated_json_data);
 
         session_start();
-        $_SESSION["user_data"] = $user_data;
+        $_SESSION["user_id"] = $user_data["id"];
             
 // Messaggio di validazione e reindirizzamento
 echo "
