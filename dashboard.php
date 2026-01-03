@@ -401,7 +401,12 @@ cursor: pointer;
       data-allowed-chatbots="<?php echo $selectedPlan['allowed_chatbots']; ?>"
       data-persona-count="<?php echo $persona_count; ?>"
       data-allowed-personas="<?php echo $selectedPlan['personas']; ?>">
-    <header>Vivacity Design Chatbot Manager Dashboard</header>
+    <header>
+        <div style="max-width: 1200px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center;">
+            <span>Vivacity Design Chatbot Manager Dashboard</span>
+            <a href="handbook.html" target="_blank" style="background-color: rgba(255,255,255,0.2); color: white; padding: 8px 16px; text-decoration: none; border-radius: 4px; font-size: 14px; margin-left: 10px;">📚 User Handbook</a>
+        </div>
+    </header>
         
              <div class="section" id="account">
  <h2>User Account Details <span style="float: right;"><a href="logout.php">❌</a></span></h2>
