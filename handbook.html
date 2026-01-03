@@ -1,0 +1,1337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chatbot Factory - User Handbook</title>
+    <style>
+        /* Reset and base styles matching the app */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* Header styles matching dashboard */
+        header {
+            background-color: #4CAF50;
+            color: #fff;
+            padding: 20px;
+            text-align: center;
+            font-size: 24px;
+            font-weight: bold;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .back-button {
+            background-color: rgba(255,255,255,0.2);
+            color: white;
+            padding: 8px 16px;
+            text-decoration: none;
+            border-radius: 4px;
+            font-size: 14px;
+            transition: background-color 0.3s;
+        }
+
+        .back-button:hover {
+            background-color: rgba(255,255,255,0.3);
+        }
+
+        /* Table of contents */
+        .toc {
+            background: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .toc h2 {
+            color: #4CAF50;
+            margin-bottom: 15px;
+            border-bottom: 2px solid #4CAF50;
+            padding-bottom: 10px;
+        }
+
+        .toc ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .toc li {
+            margin: 8px 0;
+        }
+
+        .toc a {
+            color: #333;
+            text-decoration: none;
+            display: block;
+            padding: 5px 10px;
+            border-radius: 3px;
+            transition: background-color 0.3s;
+        }
+
+        .toc a:hover {
+            background-color: #f0f0f0;
+            color: #4CAF50;
+        }
+
+        /* Section styles */
+        .section {
+            background: white;
+            padding: 30px;
+            margin: 20px 0;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .section h2 {
+            color: #4CAF50;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #4CAF50;
+        }
+
+        .section h3 {
+            color: #333;
+            margin: 20px 0 10px 0;
+        }
+
+        .section h4 {
+            color: #555;
+            margin: 15px 0 8px 0;
+        }
+
+        .section p {
+            margin-bottom: 15px;
+            color: #555;
+        }
+
+        /* List styles */
+        .section ul, .section ol {
+            margin-left: 25px;
+            margin-bottom: 15px;
+        }
+
+        .section li {
+            margin: 8px 0;
+            color: #555;
+        }
+
+        /* Table styles */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            background: white;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        th {
+            background-color: #4CAF50;
+            color: white;
+            font-weight: bold;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+
+        tr:hover {
+            background-color: #f5f5f5;
+        }
+
+        /* Info boxes */
+        .info-box {
+            background-color: #e8f5e9;
+            border-left: 4px solid #4CAF50;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 4px;
+        }
+
+        .info-box h4 {
+            color: #2e7d32;
+            margin-bottom: 8px;
+        }
+
+        .warning-box {
+            background-color: #fff3e0;
+            border-left: 4px solid #ff9800;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 4px;
+        }
+
+        .warning-box h4 {
+            color: #e65100;
+            margin-bottom: 8px;
+        }
+
+        /* Collapsible sections for FAQ */
+        details {
+            background: white;
+            margin: 10px 0;
+            border-radius: 5px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        details summary {
+            background-color: #f5f5f5;
+            padding: 15px;
+            cursor: pointer;
+            font-weight: bold;
+            color: #333;
+            border-radius: 5px;
+            list-style: none;
+        }
+
+        details summary:hover {
+            background-color: #e8f5e9;
+            color: #4CAF50;
+        }
+
+        details[open] summary {
+            background-color: #4CAF50;
+            color: white;
+        }
+
+        details div {
+            padding: 15px;
+            background: white;
+        }
+
+        /* Button styling */
+        .button {
+            background-color: #4CAF50;
+            border: none;
+            color: white;
+            padding: 10px 20px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 14px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+            transition: background-color 0.3s;
+        }
+
+        .button:hover {
+            background-color: #45a049;
+        }
+
+        .button-secondary {
+            background-color: #757575;
+        }
+
+        .button-secondary:hover {
+            background-color: #616161;
+        }
+
+        /* Code blocks */
+        code {
+            background-color: #f5f5f5;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+        }
+
+        pre {
+            background-color: #f5f5f5;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+            margin: 15px 0;
+        }
+
+        /* Footer */
+        footer {
+            background-color: #4CAF50;
+            color: #fff;
+            padding: 20px;
+            text-align: center;
+            margin-top: 40px;
+        }
+
+        footer a {
+            color: #fff;
+            text-decoration: none;
+            margin: 0 10px;
+        }
+
+        footer a:hover {
+            text-decoration: underline;
+        }
+
+        /* Responsive design */
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+            
+            .section {
+                padding: 20px;
+            }
+            
+            .header-content {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            table {
+                font-size: 0.9em;
+            }
+            
+            th, td {
+                padding: 8px;
+            }
+        }
+
+        /* Anchor offset for sticky header */
+        .section:target {
+            scroll-margin-top: 80px;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="header-content">
+            <div>Chatbot Factory - User Handbook</div>
+            <a href="dashboard.php" class="back-button">← Back to Dashboard</a>
+        </div>
+    </header>
+
+    <div class="container">
+        <!-- Table of Contents -->
+        <div class="toc" id="toc">
+            <h2>📚 Table of Contents</h2>
+            <ul>
+                <li><a href="#getting-started">1. Getting Started</a></li>
+                <li><a href="#understanding-plans">2. Understanding Plans</a></li>
+                <li><a href="#creating-chatbots">3. Creating Chatbots</a></li>
+                <li><a href="#persona-management">4. Persona Management</a></li>
+                <li><a href="#using-chatbots">5. Using Your Chatbots</a></li>
+                <li><a href="#credit-system">6. Credit System & Usage</a></li>
+                <li><a href="#account-management">7. Settings & Account Management</a></li>
+                <li><a href="#faq">8. FAQ & Troubleshooting</a></li>
+                <li><a href="#best-practices">9. Best Practices & Tips</a></li>
+            </ul>
+        </div>
+
+        <!-- Section 1: Getting Started -->
+        <div class="section" id="getting-started">
+            <h2>1. Getting Started</h2>
+            <p>Welcome to Chatbot Factory! This guide will help you get started with creating and managing your AI chatbots.</p>
+
+            <h3>Account Registration Walkthrough</h3>
+            <ol>
+                <li>Visit the main page and click on <strong>"Register"</strong></li>
+                <li>Fill in your email address and create a strong password</li>
+                <li>Click <strong>"Register"</strong> to create your account</li>
+                <li>Check your email for the OTP (One-Time Password)</li>
+                <li>Your account will be in "pending" status until verified</li>
+            </ol>
+
+            <div class="info-box">
+                <h4>💡 Tip</h4>
+                <p>Use a valid email address that you check regularly. The OTP email usually arrives within a few minutes.</p>
+            </div>
+
+            <h3>OTP Verification Process</h3>
+            <ol>
+                <li>Check your email inbox for a message from Chatbot Factory</li>
+                <li>Locate the 6-digit OTP code in the email</li>
+                <li>Go to the OTP verification page</li>
+                <li>Enter your email and the OTP code</li>
+                <li>Click <strong>"Authenticate"</strong></li>
+                <li>Upon success, you'll be redirected to the login page</li>
+            </ol>
+
+            <div class="warning-box">
+                <h4>⚠️ Important</h4>
+                <p>The OTP expires after a certain time. If your OTP doesn't work, you may need to register again or contact support.</p>
+            </div>
+
+            <h3>Login and Logout Guide</h3>
+            <h4>Logging In:</h4>
+            <ol>
+                <li>Click <strong>"Login"</strong> on the main page</li>
+                <li>Enter your registered email and password</li>
+                <li>Click <strong>"Login"</strong> to access your dashboard</li>
+                <li>If credentials are correct, you'll be redirected to the dashboard</li>
+            </ol>
+
+            <h4>Logging Out:</h4>
+            <ol>
+                <li>From the dashboard, locate the ❌ (logout) button in the top right</li>
+                <li>Click the logout button</li>
+                <li>You'll be logged out and can log in again later</li>
+            </ol>
+
+            <h3>First Time User Setup</h3>
+            <p>After your first successful login:</p>
+            <ol>
+                <li>Review your account details on the dashboard</li>
+                <li>Check your current plan and its limitations</li>
+                <li>Familiarize yourself with the dashboard layout</li>
+                <li>Consider upgrading your plan if you need more features</li>
+                <li>Start by creating your first chatbot!</li>
+            </ol>
+
+            <div class="info-box">
+                <h4>🎯 Quick Start</h4>
+                <p>Begin with a simple conversational chatbot to understand the platform before creating more complex ones.</p>
+            </div>
+        </div>
+
+        <!-- Section 2: Understanding Plans -->
+        <div class="section" id="understanding-plans">
+            <h2>2. Understanding Plans</h2>
+            <p>Chatbot Factory offers different plans to suit various needs, from individual users to businesses.</p>
+
+            <h3>Plan Comparison Table</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Feature</th>
+                        <th>Free</th>
+                        <th>Silver</th>
+                        <th>Gold</th>
+                        <th>Platinum</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Price</td>
+                        <td>€0.00/month</td>
+                        <td>€9.90/month</td>
+                        <td>€19.90/month</td>
+                        <td>€29.90/month</td>
+                    </tr>
+                    <tr>
+                        <td>Chatbots Allowed</td>
+                        <td>1</td>
+                        <td>2</td>
+                        <td>4</td>
+                        <td>6</td>
+                    </tr>
+                    <tr>
+                        <td>Credits</td>
+                        <td>1,000</td>
+                        <td>5,000</td>
+                        <td>7,500</td>
+                        <td>10,000</td>
+                    </tr>
+                    <tr>
+                        <td>Context Memory</td>
+                        <td>✓ Yes</td>
+                        <td>✓ Yes</td>
+                        <td>✓ Yes</td>
+                        <td>✓ Yes</td>
+                    </tr>
+                    <tr>
+                        <td>Disk Memory</td>
+                        <td>✗ No</td>
+                        <td>✗ No</td>
+                        <td>✓ Yes (20MB)</td>
+                        <td>✓ Yes (40MB)</td>
+                    </tr>
+                    <tr>
+                        <td>Personalities</td>
+                        <td>1</td>
+                        <td>3</td>
+                        <td>5</td>
+                        <td>15</td>
+                    </tr>
+                    <tr>
+                        <td>Chat Copy</td>
+                        <td>✓ Yes</td>
+                        <td>✓ Yes</td>
+                        <td>✓ Yes</td>
+                        <td>✓ Yes</td>
+                    </tr>
+                    <tr>
+                        <td>Chat Export</td>
+                        <td>✗ No</td>
+                        <td>✓ Yes</td>
+                        <td>✓ Yes</td>
+                        <td>✓ Yes</td>
+                    </tr>
+                    <tr>
+                        <td>TXT Import</td>
+                        <td>✗ No</td>
+                        <td>✗ No</td>
+                        <td>✓ Yes (15,000 chars)</td>
+                        <td>✓ Yes (30,000 chars)</td>
+                    </tr>
+                    <tr>
+                        <td>Personas</td>
+                        <td>0</td>
+                        <td>0</td>
+                        <td>1</td>
+                        <td>1</td>
+                    </tr>
+                    <tr>
+                        <td>Personas Module</td>
+                        <td>✗ No</td>
+                        <td>✗ No</td>
+                        <td>✓ Basic</td>
+                        <td>✓ Advanced</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h3>Features Per Plan</h3>
+            <h4>Free Plan</h4>
+            <p>Perfect for trying out the platform. Create 1 chatbot with basic conversational abilities and 1,000 credits.</p>
+
+            <h4>Silver Plan</h4>
+            <p>For individual users who need more capacity. Create 2 chatbots with 5,000 credits each and export capabilities.</p>
+
+            <h4>Gold Plan</h4>
+            <p>For power users and small businesses. Create 4 chatbots with disk memory, TXT import, and 1 persona.</p>
+
+            <h4>Platinum Plan</h4>
+            <p>For businesses with advanced needs. Create 6 chatbots with maximum features and advanced persona capabilities.</p>
+
+            <h3>Credits System Explanation</h3>
+            <p>Credits are used when your chatbot interacts with AI services:</p>
+            <ul>
+                <li>Each message sent to or received from your chatbot consumes credits</li>
+                <li>Image generation uses more credits than text conversations</li>
+                <li>Complex queries and longer responses consume more credits</li>
+                <li>Credits are allocated per chatbot based on your plan</li>
+                <li>When credits run out, the chatbot stops working until upgraded</li>
+            </ul>
+
+            <h3>Chatbot Limits Per Plan</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Plan</th>
+                        <th>Maximum Chatbots</th>
+                        <th>Credits Per Chatbot</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Free</td>
+                        <td>1</td>
+                        <td>1,000</td>
+                    </tr>
+                    <tr>
+                        <td>Silver</td>
+                        <td>2</td>
+                        <td>5,000</td>
+                    </tr>
+                    <tr>
+                        <td>Gold</td>
+                        <td>4</td>
+                        <td>7,500</td>
+                    </tr>
+                    <tr>
+                        <td>Platinum</td>
+                        <td>6</td>
+                        <td>10,000</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h3>Persona Limits Per Plan</h3>
+            <p>Personas are special profiles that give your chatbots distinct personalities:</p>
+            <ul>
+                <li><strong>Free & Silver:</strong> No personas available</li>
+                <li><strong>Gold:</strong> 1 persona with basic module</li>
+                <li><strong>Platinum:</strong> 1 persona with advanced module</li>
+            </ul>
+
+            <div class="info-box">
+                <h4>💡 Personas Tip</h4>
+                <p>Personas allow you to create chatbots with consistent personalities, perfect for customer service, education, or entertainment.</p>
+            </div>
+
+            <h3>Upgrading Plans</h3>
+            <p>To upgrade your plan:</p>
+            <ol>
+                <li>Login to your dashboard</li>
+                <li>Click on your current plan or look for upgrade options</li>
+                <li>Select the desired plan (Silver, Gold, or Platinum)</li>
+                <li>Complete the payment process via PayPal</li>
+                <li>Your account will be automatically upgraded</li>
+                <li>New features and limits will be available immediately</li>
+            </ol>
+
+            <div class="warning-box">
+                <h4>⚠️ Plan Downgrades</h4>
+                <p>If you downgrade from a higher plan, make sure you have fewer chatbots than the new plan allows, or you'll need to delete some.</p>
+            </div>
+        </div>
+
+        <!-- Section 3: Creating Chatbots -->
+        <div class="section" id="creating-chatbots">
+            <h2>3. Creating Chatbots</h2>
+            <p>Create powerful AI chatbots tailored to your specific needs with our easy-to-use interface.</p>
+
+            <h3>Step-by-Step Guide to Create a New Chatbot</h3>
+            <ol>
+                <li>Login to your dashboard</li>
+                <li>Check your current chatbot count vs. plan limits</li>
+                <li>Click <strong>"Create new Chatbot"</strong> button</li>
+                <li>Choose a template (Conversational or Image Generation)</li>
+                <li>Fill in the chatbot details form</li>
+                <li>Click <strong>"Create"</strong> to generate your chatbot</li>
+                <li>Wait for the creation process to complete</li>
+                <li>Your new chatbot will appear in your dashboard</li>
+            </ol>
+
+            <div class="info-box">
+                <h4>💡 Quick Creation</h4>
+                <p>You can create a basic chatbot in under 2 minutes! Start simple and enhance later.</p>
+            </div>
+
+            <h3>Choosing Chatbot Templates</h3>
+            <h4>Conversational Chatbot</h4>
+            <p>Perfect for:</p>
+            <ul>
+                <li>Customer service and support</li>
+                <li>FAQ assistants</li>
+                <li>General conversation practice</li>
+                <li>Information retrieval</li>
+            </ul>
+
+            <h4>Image Generation Chatbot</h4>
+            <p>Perfect for:</p>
+            <ul>
+                <li>Creative image generation</li>
+                <li>Design assistance</li>
+                <li>Visual content creation</li>
+                <li>Artistic projects</li>
+            </ul>
+
+            <div class="warning-box">
+                <h4>⚠️ Template Choice</h4>
+                <p>Choose your template carefully! While you can edit settings later, the core functionality is determined by the template.</p>
+            </div>
+
+            <h3>Customizing Chatbot Settings</h3>
+            <p>When creating or editing a chatbot, you can customize:</p>
+            <ul>
+                <li><strong>Chatbot Name:</strong> A unique identifier for your bot</li>
+                <li><strong>Chatbot Title:</strong> The display name users will see</li>
+                <li><strong>Header Color:</strong> Customize the chat interface color</li>
+                <li><strong>Background Color:</strong> Set the chat background color</li>
+                <li><strong>Message Colors:</strong> Customize user and bot message colors</li>
+                <li><strong>API Key:</strong> Your OpenAI API key for the bot</li>
+                <li><strong>Model:</strong> Choose the AI model (GPT-3.5, GPT-4, etc.)</li>
+                <li><strong>Credits Count:</strong> Set initial credits for the bot</li>
+            </ul>
+
+            <h3>Using the Chatbot Configuration Interface</h3>
+            <p>The configuration interface allows you to:</p>
+            <ul>
+                <li>Modify all visual aspects of your chatbot</li>
+                <li>Update API keys and AI models</li>
+                <li>Adjust credit allocations</li>
+                <li>Change colors and branding</li>
+                <li>Test your changes before saving</li>
+            </ul>
+
+            <div class="info-box">
+                <h4>🎨 Branding Tip</h4>
+                <p>Use your company colors or create a unique theme for each chatbot to make them easily identifiable.</p>
+            </div>
+
+            <h3>Publishing Chatbots</h3>
+            <p>Once your chatbot is created:</p>
+            <ol>
+                <li>Go to your dashboard</li>
+                <li>Find the chatbot in your list</li>
+                <li>Click <strong>"Open"</strong> to access the chat interface</li>
+                <li>Share the URL with users (each chatbot has a unique link)</li>
+                <li>The chatbot is immediately available for use</li>
+            </ol>
+
+            <h3>Deleting Chatbots</h3>
+            <p>To delete a chatbot:</p>
+            <ol>
+                <li>Go to your dashboard</li>
+                <li>Locate the chatbot you want to delete</li>
+                <li>Click <strong>"Edit"</strong> next to the chatbot</li>
+                <li>Look for the delete option (usually at the bottom)</li>
+                <li>Confirm the deletion</li>
+            </ol>
+
+            <div class="warning-box">
+                <h4>⚠️ Deletion Warning</h4>
+                <p>Deleting a chatbot is permanent! All data, conversations, and configurations will be lost. Consider backing up important information first.</p>
+            </div>
+        </div>
+
+        <!-- Section 4: Persona Management -->
+        <div class="section" id="persona-management">
+            <h2>4. Persona Management</h2>
+            <p>Personas allow you to create chatbots with distinct personalities and consistent behavior patterns.</p>
+
+            <div class="warning-box">
+                <h4>⚠️ Personas Requirements</h4>
+                <p>Personas are only available on Gold and Platinum plans. Upgrade your plan if you need persona functionality.</p>
+            </div>
+
+            <h3>Understanding Personas</h3>
+            <p>A persona is a character profile that defines:</p>
+            <ul>
+                <li>Personality traits and characteristics</li>
+                <li>Communication style and tone</li>
+                <li>Specific knowledge areas or expertise</li>
+                <li>Consistent behavior patterns</li>
+                <li>Visual appearance and branding</li>
+            </ul>
+
+            <h3>Creating New Personas</h3>
+            <ol>
+                <li>Ensure you're on a Gold or Platinum plan</li>
+                <li>From your dashboard, click <strong>"Create new Persona"</strong></li>
+                <li>Fill in the persona details form with:</li>
+                <ul>
+                    <li>Persona name and description</li>
+                    <li>Personality traits and background</li>
+                    <li>Visual customization (colors, avatar)</li>
+                    <li>API key and model selection</li>
+                </ul>
+                <li>Click <strong>"Create"</strong> to generate your persona</li>
+                <li>Your persona will appear in the dashboard</li>
+            </ol>
+
+            <h3>Editing Existing Personas</h3>
+            <ol>
+                <li>Go to your dashboard</li>
+                <li>Find the persona in your list</li>
+                <li>Click <strong>"Edit"</strong> next to the persona</li>
+                <li>Modify the desired settings</li>
+                <li>Click <strong>"Update"</strong> to save changes</li>
+            </ol>
+
+            <h3>Using Personas with Chatbots</h3>
+            <p>Personas can be applied to chatbots to give them consistent personalities:</p>
+            <ol>
+                <li>Create or edit a chatbot</li>
+                <li>In the configuration, select an available persona</li>
+                <li>Save the chatbot settings</li>
+                <li>The chatbot will now respond according to the persona's traits</li>
+            </ol>
+
+            <div class="info-box">
+                <h4>🎭 Persona Benefits</h4>
+                <p>Personas are perfect for creating consistent brand voices, character-based chatbots, or specialized expert systems.</p>
+            </div>
+
+            <h3>Persona Templates Overview</h3>
+            <p>Available persona templates include:</p>
+            <ul>
+                <li><strong>Professional Assistant:</strong> Formal, helpful, business-oriented</li>
+                <li><strong>Friendly Guide:</strong> Casual, encouraging, educational</li>
+                <li><strong>Tech Expert:</strong> Knowledgeable, precise, technical</li>
+                <li><strong>Creative Partner:</strong> Imaginative, collaborative, artistic</li>
+                <li><strong>Customer Service:</strong> Patient, solution-focused, polite</li>
+            </ul>
+        </div>
+
+        <!-- Section 5: Using Your Chatbots -->
+        <div class="section" id="using-chatbots">
+            <h2>5. Using Your Chatbots</h2>
+            <p>Learn how to effectively use and manage your deployed chatbots.</p>
+
+            <h3>Accessing Your Chatbot Dashboard</h3>
+            <p>From your main dashboard:</p>
+            <ol>
+                <li>Scroll to the "Your Chatbots" section</li>
+                <li>Find the chatbot you want to access</li>
+                <li>Click <strong>"Open"</strong> next to the chatbot name</li>
+                <li>The chat interface will open in a new tab</li>
+            </ol>
+
+            <h3>Interacting with Conversational Bots</h3>
+            <p>Conversational bots respond to text input:</p>
+            <ul>
+                <li>Type your message in the input field</li>
+                <li>Press Enter or click send</li>
+                <li>Wait for the AI to generate a response</li>
+                <li>Continue the conversation naturally</li>
+                <li>Use the copy feature to save important responses</li>
+            </ul>
+
+            <div class="info-box">
+                <h4>💬 Conversation Tips</h4>
+                <p>Be clear and specific in your questions. The AI performs better with well-formulated queries.</p>
+            </div>
+
+            <h3>Using Image Generation Features</h3>
+            <p>Image generation bots create visual content:</p>
+            <ul>
+                <li>Describe the image you want in detail</li>
+                <li>Include style, colors, composition details</li>
+                <li>Wait for the AI to generate the image</li>
+                <li>Download or save the generated image</li>
+                <li>Refine your description for better results</li>
+            </ul>
+
+            <h3>Understanding Credit Usage</h3>
+            <p>Credits are consumed based on activity:</p>
+            <ul>
+                <li><strong>Text messages:</strong> 1-5 credits per exchange</li>
+                <li><strong>Image generation:</strong> 10-50 credits per image</li>
+                <li><strong>Complex queries:</strong> 5-15 credits</li>
+                <li><strong>Long conversations:</strong> Credits accumulate</li>
+            </ul>
+
+            <div class="warning-box">
+                <h4>⚠️ Credit Monitoring</h4>
+                <p>Monitor your credit usage regularly. When credits reach zero, the chatbot will stop responding until upgraded.</p>
+            </div>
+
+            <h3>Viewing Conversation History</h3>
+            <p>Depending on your plan:</p>
+            <ul>
+                <li>Context memory maintains recent conversation history</li>
+                <li>Disk memory (Gold/Platinum) stores conversations persistently</li>
+                <li>Use the copy feature to save important exchanges</li>
+                <li>Export conversations (Silver and above) for record keeping</li>
+            </ul>
+
+            <h3>Managing Resident Memory</h3>
+            <p>Resident memory stores conversation context:</p>
+            <ul>
+                <li>Larger memory allows for longer, more coherent conversations</li>
+                <li>Memory usage varies by plan (Free: basic, Gold/Platinum: extended)</li>
+                <li>Clear memory periodically to improve performance</li>
+                <li>Monitor memory usage in the chatbot settings</li>
+            </ul>
+        </div>
+
+        <!-- Section 6: Credit System & Usage -->
+        <div class="section" id="credit-system">
+            <h2>6. Credit System & Usage</h2>
+            <p>Understanding how credits work is essential for managing your chatbots effectively.</p>
+
+            <h3>How Credits Work</h3>
+            <p>Credits are the currency that powers your chatbots:</p>
+            <ul>
+                <li>Each plan includes a specific credit allocation</li>
+                <li>Credits are consumed when chatbots interact with AI services</li>
+                <li>Credits are allocated per chatbot, not per account</li>
+                <li>When credits run out, chatbots stop functioning</li>
+                <li>Credits do not automatically renew (except with plan upgrades)</li>
+            </ul>
+
+            <h3>Credit Allocation Per Plan</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Plan</th>
+                        <th>Total Credits</th>
+                        <th>Per Chatbot</th>
+                        <th>Approx. Text Messages</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Free</td>
+                        <td>1,000</td>
+                        <td>1,000</td>
+                        <td>200-300</td>
+                    </tr>
+                    <tr>
+                        <td>Silver</td>
+                        <td>10,000</td>
+                        <td>5,000</td>
+                        <td>1,000-1,500</td>
+                    </tr>
+                    <tr>
+                        <td>Gold</td>
+                        <td>30,000</td>
+                        <td>7,500</td>
+                        <td>1,500-2,000</td>
+                    </tr>
+                    <tr>
+                        <td>Platinum</td>
+                        <td>60,000</td>
+                        <td>10,000</td>
+                        <td>2,000-3,000</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h3>Using Credits Effectively</h3>
+            <ul>
+                <li><strong>Be concise:</strong> Shorter messages use fewer credits</li>
+                <li><strong>Batch requests:</strong> Combine related questions</li>
+                <li><strong>Use appropriate models:</strong> GPT-3.5 uses fewer credits than GPT-4</li>
+                <li><strong>Monitor usage:</strong> Check credit levels regularly</li>
+                <li><strong>Plan ahead:</strong> High-traffic periods may require more credits</li>
+            </ul>
+
+            <h3>Monitoring Credit Usage</h3>
+            <p>Track your credit usage:</p>
+            <ol>
+                <li>Go to your dashboard</li>
+                <li>View your chatbot list</li>
+                <li>Check the "Chatbot Credits" field for each bot</li>
+                <li>Monitor usage patterns over time</li>
+                <li>Set up alerts if available on your plan</li>
+            </ol>
+
+            <div class="info-box">
+                <h4>📊 Usage Patterns</h4>
+                <p>Most users find that credit usage is highest during the first week as they test and optimize their chatbots.</p>
+            </div>
+
+            <h3>Recharging or Upgrading</h3>
+            <p>When credits run low:</p>
+            <ol>
+                <li>Option 1: Upgrade to a higher plan for more credits</li>
+                <li>Option 2: Reduce usage on current chatbots</li>
+                <li>Option 3: Delete and recreate chatbots (resets some credits)</li>
+                <li>Option 4: Contact support for credit packages</li>
+            </ol>
+
+            <div class="warning-box">
+                <h4>⚠️ Credit Exhaustion</h4>
+                <p>When a chatbot runs out of credits, it will stop responding. Always monitor credit levels to avoid service interruption.</p>
+            </div>
+        </div>
+
+        <!-- Section 7: Settings & Account Management -->
+        <div class="section" id="account-management">
+            <h2>7. Settings & Account Management</h2>
+            <p>Manage your account settings and preferences to keep your profile secure and up-to-date.</p>
+
+            <h3>Changing Password</h3>
+            <p>To change your password:</p>
+            <ol>
+                <li>Login to your dashboard</li>
+                <li>Look for account settings (future feature)</li>
+                <li>Enter your current password</li>
+                <li>Enter your new password twice</li>
+                <li>Save changes</li>
+            </ol>
+
+            <div class="info-box">
+                <h4>🔒 Password Security</h4>
+                <p>Use strong passwords with at least 8 characters, including uppercase, lowercase, numbers, and symbols.</p>
+            </div>
+
+            <h3>Managing API Keys</h3>
+            <p>API keys connect your chatbots to AI services:</p>
+            <ul>
+                <li>Each chatbot can have its own API key</li>
+                <li>Use OpenAI API keys for GPT models</li>
+                <li>Keep API keys secure and private</li>
+                <li>Rotate keys regularly for security</li>
+                <li>Different keys can have different rate limits</li>
+            </ul>
+
+            <h3>Resetting Password (Forgot Password Flow)</h3>
+            <p>If you forget your password:</p>
+            <ol>
+                <li>Contact support at the provided email</li>
+                <li>Verify your identity with your registered email</li>
+                <li>Support will guide you through the reset process</li>
+                <li>Set a new strong password</li>
+                <li>Login with your new password</li>
+            </ol>
+
+            <div class="warning-box">
+                <h4>⚠️ Account Recovery</h4>
+                <p>Always use a valid, accessible email address. Account recovery depends on email verification.</p>
+            </div>
+
+            <h3>Viewing Account Statistics</h3>
+            <p>Your dashboard shows comprehensive statistics:</p>
+            <ul>
+                <li><strong>User ID:</strong> Your unique identifier</li>
+                <li><strong>Email:</strong> Your registered email address</li>
+                <li><strong>Plan Type:</strong> Current subscription plan</li>
+                <li><strong>Signup Date:</strong> When you joined</li>
+                <li><strong>Last Seen:</strong> Your last login timestamp</li>
+                <li><strong>Credits:</strong> Available credits for your plan</li>
+                <li><strong>Chatbots:</strong> Number of active chatbots</li>
+                <li><strong>Personas:</strong> Number of personas (Gold/Platinum)</li>
+            </ul>
+
+            <h3>Last Seen Tracking</h3>
+            <p>The platform automatically tracks your activity:</p>
+            <ul>
+                <li>Updates when you login to the dashboard</li>
+                <li>Helps with account security monitoring</li>
+                <li>Used for usage analytics</li>
+                <li>Can help identify unauthorized access</li>
+            </ul>
+
+            <div class="info-box">
+                <h4>📈 Activity Insights</h4>
+                <p>Regular logins show active usage. If you notice login times you don't recognize, contact support immediately.</p>
+            </div>
+        </div>
+
+        <!-- Section 8: FAQ & Troubleshooting -->
+        <div class="section" id="faq">
+            <h2>8. FAQ & Troubleshooting</h2>
+            <p>Find answers to common questions and solutions to frequent issues.</p>
+
+            <h3>Frequently Asked Questions</h3>
+
+            <details>
+                <summary><strong>Q: I've reached my chatbot limit. What can I do?</strong></summary>
+                <div>
+                    <h4>Solutions:</h4>
+                    <ol>
+                        <li><strong>Delete existing chatbots:</strong> Remove chatbots you no longer need</li>
+                        <li><strong>Upgrade your plan:</strong> Higher plans allow more chatbots</li>
+                        <li><strong>Optimize current chatbots:</strong> Combine functionality into fewer bots</li>
+                        <li><strong>Contact support:</strong> Discuss custom solutions for your needs</li>
+                    </ol>
+                </div>
+            </details>
+
+            <details>
+                <summary><strong>Q: I can't create personas. What's wrong?</strong></summary>
+                <div>
+                    <h4>Persona Requirements:</h4>
+                    <ul>
+                        <li>You must be on a <strong>Gold or Platinum</strong> plan</li>
+                        <li>Free and Silver plans do not include persona features</li>
+                        <li>Upgrade your plan to access persona creation</li>
+                        <li>Check that you haven't reached your persona limit</li>
+                    </ul>
+                </div>
+            </details>
+
+            <details>
+                <summary><strong>Q: My chatbot isn't responding. What should I check?</strong></summary>
+                <div>
+                    <h4>Troubleshooting Steps:</h4>
+                    <ol>
+                        <li><strong>Check credits:</strong> Ensure your chatbot has available credits</li>
+                        <li><strong>Verify API key:</strong> Make sure the API key is valid and active</li>
+                        <li><strong>Check internet connection:</strong> Ensure stable connectivity</li>
+                        <li><strong>Review error messages:</strong> Look for specific error information</li>
+                        <li><strong>Test with simple queries:</strong> Try basic questions first</li>
+                        <li><strong>Restart the chatbot:</strong> Refresh the page or clear cache</li>
+                    </ol>
+                </div>
+            </details>
+
+            <details>
+                <summary><strong>Q: How do I reset my password?</strong></summary>
+                <div>
+                    <ol>
+                        <li>Contact support via the provided email</li>
+                        <li>Provide your registered email for verification</li>
+                        <li>Follow the password reset instructions sent by support</li>
+                        <li>Create a new strong password</li>
+                        <li>Login with your new credentials</li>
+                    </ol>
+                </div>
+            </details>
+
+            <details>
+                <summary><strong>Q: Can I export my chatbot conversations?</strong></summary>
+                <div>
+                    <p>Export capability depends on your plan:</p>
+                    <ul>
+                        <li><strong>Free:</strong> No export feature</li>
+                        <li><strong>Silver, Gold, Platinum:</strong> Yes, export is available</li>
+                        <li>Look for export options in your chatbot interface</li>
+                        <li>Export formats may include text, PDF, or other options</li>
+                    </ul>
+                </div>
+            </details>
+
+            <h3>Session/Login Issues</h3>
+
+            <details>
+                <summary><strong>"I can't login" or "Session expired" errors</strong></summary>
+                <div>
+                    <h4>Solutions:</h4>
+                    <ol>
+                        <li><strong>Clear browser cookies and cache</strong></li>
+                        <li><strong>Check your credentials:</strong> Verify email and password</li>
+                        <li><strong>Account status:</strong> Ensure your account is active (not pending)</li>
+                        <li><strong>Browser compatibility:</strong> Try a different browser</li>
+                        <li><strong>Session timeout:</strong> Login again if session expired</li>
+                        <li><strong>Contact support:</strong> If problems persist</li>
+                    </ol>
+                </div>
+            </details>
+
+            <h3>Chatbot Performance Tips</h3>
+
+            <details>
+                <summary><strong>Improving response quality</strong></summary>
+                <div>
+                    <ul>
+                        <li>Use clear, specific questions</li>
+                        <li>Provide context in your queries</li>
+                        <li>Use appropriate AI models for your needs</li>
+                        <li>Regularly update API keys</li>
+                        <li>Monitor and manage credit levels</li>
+                        <li>Clear conversation memory periodically</li>
+                    </ul>
+                </div>
+            </details>
+
+            <details>
+                <summary><strong>Speeding up responses</strong></summary>
+                <div>
+                    <ul>
+                        <li>Use GPT-3.5 instead of GPT-4 for faster responses</li>
+                        <li>Keep conversations focused and concise</li>
+                        <li>Avoid overly complex queries</li>
+                        <li>Ensure stable internet connection</li>
+                        <li>Close unnecessary browser tabs</li>
+                    </ul>
+                </div>
+            </details>
+
+            <h3>Credit Exhaustion Handling</h3>
+
+            <details>
+                <summary><strong>"My chatbot ran out of credits"</strong></summary>
+                <div>
+                    <h4>Immediate Actions:</h4>
+                    <ol>
+                        <li><strong>Upgrade your plan:</strong> Get more credits instantly</li>
+                        <li><strong>Reduce usage:</strong> Limit chatbot interactions</li>
+                        <li><strong>Create new chatbot:</strong> Some plans reset credits for new bots</li>
+                        <li><strong>Contact support:</strong> Discuss credit packages</li>
+                        <li><strong>Optimize usage:</strong> Use credits more efficiently</li>
+                    </ol>
+                </div>
+            </details>
+
+            <h3>Common Configuration Errors</h3>
+
+            <details>
+                <summary><strong>Invalid API key errors</strong></summary>
+                <div>
+                    <ol>
+                        <li>Verify the API key is entered correctly</li>
+                        <li>Check that the API key is active and valid</li>
+                        <li>Ensure you have sufficient API quota</li>
+                        <li>Try regenerating the API key from your provider</li>
+                        <li>Update the key in your chatbot configuration</li>
+                    </ol>
+                </div>
+            </details>
+
+            <details>
+                <summary><strong>Color configuration not working</strong></summary>
+                <div>
+                    <ol>
+                        <li>Use valid hex color codes (e.g., #FF0000 for red)</li>
+                        <li>Ensure the # symbol is included</li>
+                        <li>Use 6-digit hex codes</li>
+                        <li>Clear browser cache after changes</li>
+                        <li>Save changes before testing</li>
+                    </ol>
+                </div>
+            </details>
+        </div>
+
+        <!-- Section 9: Best Practices & Tips -->
+        <div class="section" id="best-practices">
+            <h2>9. Best Practices & Tips</h2>
+            <p>Maximize your Chatbot Factory experience with these proven strategies.</p>
+
+            <h3>Effective Chatbot Naming Conventions</h3>
+            <ul>
+                <li><strong>Be descriptive:</strong> Use names that indicate purpose (e.g., "CustomerSupportBot")</li>
+                <li><strong>Include version numbers:</strong> "SupportBot_v2" for iterations</li>
+                <li><strong>Use project codes:</strong> "ProjX_FAQ_Bot" for organization</li>
+                <li><strong>Keep it readable:</strong> Avoid excessive abbreviations</li>
+                <li><strong>Be consistent:</strong> Use similar patterns across related bots</li>
+            </ul>
+
+            <div class="info-box">
+                <h4>🏷️ Naming Examples</h4>
+                <p>Good: "HR_Onboarding_Assistant"<br>
+                Bad: "bot123"<br>
+                Better: "V1_HR_OB_2024"</p>
+            </div>
+
+            <h3>Writing Effective Bot Personalities</h3>
+            <ul>
+                <li><strong>Define clear traits:</strong> Is your bot friendly, professional, or technical?</li>
+                <li><strong>Consistency matters:</strong> Maintain the same tone across conversations</li>
+                <li><strong>Match your audience:</strong> Adapt personality to user expectations</li>
+                <li><strong>Use personas:</strong> Create detailed character backgrounds</li>
+                <li><strong>Test and refine:</strong> Adjust based on user feedback</li>
+            </ul>
+
+            <h3>Optimizing Credit Usage</h3>
+            <ul>
+                <li><strong>Batch similar requests:</strong> Ask multiple related questions at once</li>
+                <li><strong>Use concise language:</strong> Short, clear messages use fewer credits</li>
+                <li><strong>Choose the right model:</strong> GPT-3.5 is cheaper and faster for simple tasks</li>
+                <li><strong>Monitor usage patterns:</strong> Identify peak usage times</li>
+                <li><strong>Plan upgrades strategically:</strong> Upgrade before credits run out</li>
+            </ul>
+
+            <h3>Using Personas Effectively</h3>
+            <ul>
+                <li><strong>Create detailed backgrounds:</strong> Rich personas lead to better interactions</li>
+                <li><strong>Match persona to purpose:</strong> Professional for business, casual for entertainment</li>
+                <li><strong>Use advanced features:</strong> Platinum's advanced module offers more control</li>
+                <li><strong>Test thoroughly:</strong> Ensure persona behavior matches expectations</li>
+                <li><strong>Update regularly:</strong> Refine personas based on performance</li>
+            </ul>
+
+            <div class="info-box">
+                <h4>🎭 Persona Development</h4>
+                <p>Spend time crafting detailed personas. The more thought you put into the character, the more authentic the interactions will feel.</p>
+            </div>
+
+            <h3>Privacy and Security Best Practices</h3>
+            <ul>
+                <li><strong>Secure API keys:</strong> Never share API keys publicly</li>
+                <li><strong>Use strong passwords:</strong> Protect your account with complex passwords</li>
+                <li><strong>Regular audits:</strong> Review who has access to your chatbots</li>
+                <li><strong>Data sensitivity:</strong> Avoid training chatbots on sensitive information</li>
+                <li><strong>Monitor usage:</strong> Watch for unusual activity patterns</li>
+                <li><strong>Update regularly:</strong> Keep passwords and API keys fresh</li>
+            </ul>
+
+            <h3>Tips for Different Use Cases</h3>
+
+            <h4>Customer Service</h4>
+            <ul>
+                <li>Create persona with patient, helpful traits</li>
+                <li>Include extensive FAQ knowledge</li>
+                <li>Use professional but friendly tone</li>
+                <li>Enable conversation export for quality assurance</li>
+            </ul>
+
+            <h4>Education</h4>
+            <ul>
+                <li>Design encouraging, supportive personas</li>
+                <li>Include step-by-step explanation capabilities</li>
+                <li>Use examples and analogies frequently</li>
+                <li>Enable context memory for learning progress</li>
+            </ul>
+
+            <h4>Creative Writing</h4>
+            <ul>
+                <li>Develop imaginative, collaborative personas</li>
+                <li>Use image generation features for inspiration</li>
+                <li>Enable long conversation memory</li>
+                <li>Create multiple personas for different writing styles</li>
+            </ul>
+
+            <h4>Internal Business Use</h4>
+            <ul>
+                <li>Focus on efficiency and accuracy</li>
+                <li>Train on company-specific information</li>
+                <li>Use consistent branding and terminology</li>
+                <li>Monitor usage for ROI analysis</li>
+            </ul>
+
+            <h3>Performance Optimization</h3>
+            <ul>
+                <li><strong>Regular maintenance:</strong> Update configurations and API keys</li>
+                <li><strong>Monitor response times:</strong> Identify slow-performing bots</li>
+                <li><strong>Clear memory periodically:</strong> Remove old conversation data</li>
+                <li><strong>Test different models:</strong> Find the best balance of quality and speed</li>
+                <li><strong>Gather feedback:</strong> Use user input to improve performance</li>
+            </ul>
+
+            <div class="warning-box">
+                <h4>⚠️ Important Reminders</h4>
+                <ul>
+                    <li>Always backup important configurations</li>
+                    <li>Test changes in a development environment first</li>
+                    <li>Keep track of API costs and usage limits</li>
+                    <li>Regularly review and update security settings</li>
+                    <li>Stay informed about platform updates and new features</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p>Chatbot Factory User Handbook | <a href="dashboard.php">Back to Dashboard</a> | <a href="#toc">Table of Contents</a></p>
+        <p>Need help? Contact support or check our <a href="#faq">FAQ section</a></p>
+    </footer>
+
+    <script>
+        // Smooth scrolling for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+
+        // Add active class to current section in TOC
+        window.addEventListener('scroll', () => {
+            const sections = document.querySelectorAll('.section');
+            const tocLinks = document.querySelectorAll('.toc a');
+            
+            let current = '';
+            sections.forEach(section => {
+                const sectionTop = section.offsetTop;
+                const sectionHeight = section.clientHeight;
+                if (pageYOffset >= sectionTop - 100) {
+                    current = section.getAttribute('id');
+                }
+            });
+
+            tocLinks.forEach(link => {
+                link.style.fontWeight = 'normal';
+                if (link.getAttribute('href') === `#${current}`) {
+                    link.style.fontWeight = 'bold';
+                    link.style.color = '#4CAF50';
+                } else {
+                    link.style.color = '#333';
+                }
+            });
+        });
+    </script>
+</body>
+</html>
