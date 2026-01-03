@@ -54,9 +54,11 @@ The technology stack used in the project includes:
 5. Experimentation and Learning: Developers and hobbyists can use the framework to learn about chatbot development, experiment with different configurations, and understand how chatbots work.
 
 Overall, the chatbot_factory repository provides a robust and flexible solution for anyone interested in chatbot creation and management, making it a valuable resource in the growing field of conversational AI.
+
 🛠️ Technologies Used
 HTMLPHP
-📁 Main File Structure
+
+# Main File Structure
 📄 README.md
 📄 bgt_silver_accnt.html
 📄 chatbot_face_01.jpg
