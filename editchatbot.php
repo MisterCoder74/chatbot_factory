@@ -1,0 +1,243 @@
+<?php
+session_start();
+
+// Verifica se l'utente è loggato
+if (!isset($_SESSION["user_id"])) {
+    die("Accesso non autorizzato");
+}
+
+$user_id = $_SESSION["user_id"];
+$chatbot_id = $_GET['id'] ?? null;
+
+// Funzione per leggere i dati del chatbot
+function getChatbotData($user_id, $chatbot_id) {
+    $conf_path = $user_id . '/chatbots/' . $chatbot_id . '/conf.json';
+    if (!file_exists($conf_path)) {
+        return null;
+    }
+    return json_decode(file_get_contents($conf_path), true)[0] ?? null;
+}
+
+// Gestione richiesta di aggiornamento
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    header('Content-Type: application/json');
+    
+    try {
+        $destination_conf = $user_id . '/chatbots/' . $chatbot_id . '/conf.json';
+
+        if (!file_exists($destination_conf)) {
+            throw new Exception('Configuration file not found');
+        }
+
+        $background_color = $_POST['background_color'] ?? '';
+        $text_color = $_POST['text_color'] ?? '';
+        $style_color = $_POST['style_color'] ?? '';
+        $chatbot_name = $_POST['chatbot_name'] ?? '';
+        $chatbot_heading = $_POST['chatbot_heading'] ?? '';
+        $chatbot_apikey = $_POST['chatbot_apikey'] ?? '';    
+
+        $conf_data = json_decode(file_get_contents($destination_conf), true);
+
+        if (!empty($conf_data)) {
+            $conf_data[0]['background_color'] = $background_color;
+            $conf_data[0]['text_color'] = $text_color;
+            $conf_data[0]['style_color'] = $style_color;
+            $conf_data[0]['chatbot_name'] = $chatbot_name;
+            $conf_data[0]['header'] = $chatbot_heading;
+            $conf_data[0]['chatbot_apikey'] = $chatbot_apikey;    
+        }
+
+        if (file_put_contents($destination_conf, json_encode($conf_data, JSON_PRETTY_PRINT)) === false) {
+            throw new Exception('Error while writing conf.json');
+        }
+
+        echo json_encode([
+            'success' => true, 
+            'message' => 'Chatbot successfully updated!', 
+            'chatbot_id' => $chatbot_id
+        ]);
+        exit;
+    } catch (Exception $e) {
+        echo json_encode(['success' => false, 'message' => $e->getMessage()]);
+        exit;
+    }
+}
+
+// Ottieni i dati attuali del chatbot
+$chatbotData = getChatbotData($user_id, $chatbot_id);
+if (!$chatbotData) {
+    die("Chatbot not found");
+}
+?>
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <title>Modifica Chatbot</title>
+    <style>
+.modal {
+position: fixed;
+z-index: 1;
+left: 0;
+top: 0;
+width: 100%;
+height: 100%;
+overflow: auto;
+background-color: rgb(0,0,0);
+background-color: rgba(0,0,0,0.4);
+padding-top: 60px;
+}
+
+.modal-content {
+background-color: #fefefe;
+margin: 5% auto;
+padding: 20px;
+border: 1px solid #888;
+width: 40%;
+}
+
+.close-button {
+color: #aaa;
+float: right;
+font-size: 28px;
+font-weight: bold;
+}
+
+.close-button:hover,
+.close-button:focus {
+color: black;
+text-decoration: none;
+cursor: pointer;
+} 
+            
+ /* Form styles */
+    form {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    input[type=text] {
+      width: 50%;
+      padding: 10px;
+      margin: 10px 0;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+    input[type=color] {
+            width: 50%;
+            height: 48px;
+      padding: 2px;
+      margin: 10px 0;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+            }       
+
+    button {
+      background-color: #4CAF50;
+      border: none;
+      color: #fff;
+      padding: 10px 20px;
+      text-align: center;
+      text-decoration: none;
+      display: inline-block;
+      font-size: 14px;
+      border-radius: 4px;
+      cursor: pointer;
+            margin-top: .5rem;
+    }
+            
+        label {
+            margin-top: 10px;
+            display: block;
+        }
+        input {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 10px;
+        }
+        #edit-confirm-button {
+            width: 100%;
+            padding: 10px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div id="editModal" class="modal" style="display: block;">
+        <div class="modal-content">
+            <span class="close-button" onclick="window.close()">&times;</span>
+            <h2>Modifica Chatbot: <?php echo htmlspecialchars($chatbotData['chatbot_name']); ?></h2>
+            
+            <label for="edit-chatbot-name">Chatbot Name:</label>
+            <input type="text" id="edit-chatbot-name" name="chatbot-name" 
+                   value="<?php echo htmlspecialchars($chatbotData['chatbot_name'] ?? ''); ?>" 
+                   placeholder="Inserisci nome chatbot" required>
+            
+            <label for="edit-chatbot-heading">Chatbot Heading:</label>
+            <input type="text" id="edit-chatbot-heading" name="chatbot-heading" 
+                   value="<?php echo htmlspecialchars($chatbotData['header'] ?? ''); ?>" 
+                   placeholder="Inserisci intestazione" required>
+            
+            <label for="edit-chatbot-apikey">OpenAI API Key:</label>
+            <input type="text" id="edit-chatbot-apikey" name="chatbot_apikey" 
+                   value="<?php echo htmlspecialchars($chatbotData['chatbot_apikey'] ?? ''); ?>" 
+                   placeholder="Inserisci la tua API key" required>
+            
+            <label for="edit-background-color">Background Color:</label>
+            <input type="color" id="edit-background-color" name="background-color" 
+                   value="<?php echo htmlspecialchars($chatbotData['background_color'] ?? '#FFFFFF'); ?>">
+            
+            <label for="edit-text-color">Text Color:</label>
+            <input type="color" id="edit-text-color" name="text-color" 
+                   value="<?php echo htmlspecialchars($chatbotData['text_color'] ?? '#000000'); ?>">
+            
+            <label for="edit-style-color">Styled Elements Color:</label>
+            <input type="color" id="edit-style-color" name="style-color" 
+                   value="<?php echo htmlspecialchars($chatbotData['style_color'] ?? '#007bff'); ?>">
+            
+            <button id="edit-confirm-button">Confirm Changes</button>
+        </div>
+    </div>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const editConfirmButton = document.getElementById('edit-confirm-button');
+        
+        editConfirmButton.addEventListener('click', function() {
+            // Raccogli i valori dai campi di input
+            const formData = new FormData();
+            formData.append('chatbot_name', document.getElementById('edit-chatbot-name').value);
+            formData.append('chatbot_heading', document.getElementById('edit-chatbot-heading').value);
+            formData.append('chatbot_apikey', document.getElementById('edit-chatbot-apikey').value);
+            formData.append('background_color', document.getElementById('edit-background-color').value);
+            formData.append('text_color', document.getElementById('edit-text-color').value);
+            formData.append('style_color', document.getElementById('edit-style-color').value);
+            
+            // Invia la richiesta al server
+            fetch(window.location.href, {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Chatbot successfully updated!');
+                    window.close(); // Chiudi la finestra
+                } else {
+                    alert('Errore: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error: ', error);
+                alert('An error occurred while updating the chatbot');
+            });
+        });
+    });
+    </script>
+</body>
+</html>

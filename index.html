@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Vivacity Design Chatbot Factory</title>
+  <style>
+    /* Reset some default styles */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    /* Base styles */
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f5f5f5;
+      color: #333;
+        background: url("chatbot_factory.png");
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-position: center;      
+    }
+
+    .container {
+      max-width: 90%;
+      margin: 0 auto;
+      padding: 20px;
+    }
+
+    /* Header styles */
+    header {
+      background-color: #4CAF50;
+      color: #fff;
+      padding: 20px;
+      text-align: center;
+      font-size: 24px;
+      font-weight: bold;
+      display: flex;
+            justify-content: space-between;
+    }
+section {
+margin: 1rem auto;
+background: rgba(255, 255, 255, 0.6);
+backdrop-filter: blur(2px);        
+border-radius: 8px;
+box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+padding: 20px;
+width: 95%;
+text-align: center;
+}
+section h1, section h2 {
+          margin: .5rem auto;
+        padding: 10px 0;
+          }   
+          
+section h1 {
+        font-size: 2.2rem;  }           
+          
+section p {
+          padding: 8px;
+        font-size: 1.2rem;
+        
+          }          
+          
+    /* Login and Registration Modals */
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 1;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      overflow: auto;
+      background-color: rgba(0, 0, 0, 0.4);
+    }
+
+    .modal-content {
+      background-color: #fefefe;
+      margin: 15% auto;
+      padding: 20px;
+      border: 1px solid #888;
+      width: 30%;
+    }
+
+    .close {
+      color: #aaa;
+      float: right;
+      font-size: 28px;
+      font-weight: bold;
+    }
+
+    .close:hover,
+    .close:focus {
+      color: black;
+      text-decoration: none;
+      cursor: pointer;
+    }
+
+    /* Form styles */
+    form {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    input {
+      width: 100%;
+      padding: 10px;
+      margin: 10px 0;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+
+    header button {
+      background-color: #4CAF50;
+      border: none;
+      color: #fff;
+      padding: 10px 20px;
+      text-align: center;
+      text-decoration: none;
+      display: inline-block;
+      font-size: 14px;
+      border-radius: 4px;
+            border: 2px solid white;
+      cursor: pointer;
+    }
+    header button:hover {
+          border: 2px solid black;
+            color: black;
+          }  
+          
+        .card-container {
+            display: flex;
+            justify-content: center;
+                align-items: center;
+            flex-wrap: wrap;
+        }
+            .card {
+            border: 1px solid grey;
+			box-shadow: 0 2px 8px grey;                    
+            border-radius: 5px;
+            padding: 10px;
+            margin: 10px 12px;
+            text-align: center;
+            width: 26rem;
+            height: 26rem; 
+            
+        }
+
+            
+            .card p {
+            margin: 1rem auto;
+                    font-size: 1rem;
+                    color: #000;
+            }
+          
+            .image-placeholder {
+            width: 100%;
+            height: auto;
+            background: transparent;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: #888;
+            
+        }
+          .image-placeholder img {
+          width: 300px;
+                  height: auto;
+                  border-radius: 12px;
+                  
+          }
+          
+
+
+.form-group {
+margin-bottom: 15px;
+        width: 80%;
+                /* Space between form groups */
+}
+
+.form-group label {
+display: block; /* Labels above the respective input fields */
+margin-bottom: 5px; /* Space between label and input */
+font-weight: bold; /* Bold label text */
+color: #333; /* Color for labels */
+}
+
+.form-group input,
+.form-group textarea {
+width: 100%; /* Full width inputs */
+padding: 10px; /* Space inside the input fields */
+border: 1px solid #ccc; /* Border color */
+border-radius: 4px; /* Rounded corners */
+font-size: 16px; /* Slightly larger font in input fields */
+transition: border-color 0.3s; /* Smooth transition for border color on focus */
+}
+
+.form-group input:focus,
+.form-group textarea:focus {
+border-color: #007BFF; /* Change border color on focus */
+outline: none; /* Remove outline */
+}
+
+button {
+background-color: #4CAF50; /* Button background color */
+color: #fff; /* Button text color */
+padding: 10px 15px; /* Space inside the button */
+border: none; /* Remove border */
+border-radius: 4px; /* Rounded corners */
+cursor: pointer; /* Pointer cursor on hover */
+font-size: 16px; /* Button font size */
+transition: background-color 0.3s; /* Smooth transition for background color */
+}
+
+button:hover {
+background-color: #4CFF50; /* Darker blue on hover */
+}          
+          
+  </style>
+</head>
+<body>
+  <header>Vivacity Design Chatbot Factory
+      <div class="options">    
+      <button id="loginBtn">Login</button>
+    <button id="registrationBtn">Register</button>      
+      </div>        
+        </header>
+<div class="container">
+          
+<section>
+<h1>Welcome to Chatbot Factory</h1>
+<p>Your partner for innovative chatbot solutions</p>        
+<h2>About Our Service</h2>
+<p>
+        
+At Chatbot Factory, we empower users to create intelligent chatbots with ease.
+<br>Our platform allows you to design and deploy six different types of chatbots tailored to your needs, from customer service to image generation assistants.
+</p><br>
+        <h3>Multiple Purpose Chatbots</h3>
+        <div class="card-container">
+                <div class="card">
+                    <div class="image-placeholder"><img src="chatbot_face_01.jpg"></div>
+                    <p class="type"><b>Conversational Chatbot</b><br>Chat with your chatbot in any language and topic.</p>
+                </div>
+                <div class="card">
+                    <div class="image-placeholder"><img src="chatbot_face_02.jpg"></div>
+                    <p class="type"><b>Content Creation Chatbot</b><br>Create astonishing content for your social media.</p>
+                </div>
+        </div>
+        <div class="card-container">
+                <div class="card">
+                    <div class="image-placeholder"><img src="chatbot_face_03.jpg"></div>
+                    <p class="type"><b>Image Generation Chatbot</b><br>Generate amazing images in HD in seconds.</p>
+                </div>
+                <div class="card">
+                    <div class="image-placeholder"><img src="chatbot_face_04.jpg"></div>
+                    <p class="type"><b>Website Composer Chatbot</b><br>Create the front-end for your website or landing page.</p>
+                </div>
+        </div>
+        <div class="card-container"> 
+                    <div class="card">
+                    <div class="image-placeholder"><img src="chatbot_face_05.jpg"></div>
+                    <p class="type"><b>Image Rebuilder Chatbot</b><br>Upload an image and rebuild it from scratch.</p>
+                </div>
+                <div class="card">
+                    <div class="image-placeholder"><img src="chatbot_face_06.jpg"></div>
+                    <p class="type"><b>SEO Optimizer Chatbot</b><br>Full-featured optimizatiion for your website, in a minute.</p>
+                </div>
+        </div>
+        
+        <p>With a user-friendly interface, you will be able to customize the layout of your chatbot, ensuring it aligns perfectly with your business objectives.
+</p><br>
+        <h3>AI Persona (*)</h3>
+        <div class="card-container">
+                <div class="card">
+                    <div class="image-placeholder"><img src="persona_schema.jpg"></div>
+                    <p class="type"><b>AI Persona</b><br>Create a digital version of yourself or your favourite person.</p>
+                </div>
+        </div>        
+        
+<p>
+Whether you're a small business owner or a large corporation, we have a solution for everyone.<br>
+Sign up today for a free complete account and start exploring the world of chatbots!
+</p>
+<small>(*) AI Personas are only available with Gold and Platinum accounts</small>        
+        
+        
+</section>          
+
+          
+<section>
+<h2>Contact Us</h2>
+<p>If you have any questions or inquiries, please fill out the form below, and we will get back to you as soon as possible!</p>
+<form action="submit_form.php" method="POST" style="margin: .5rem auto; width: 50%;">
+<div class="form-group">
+<label for="name">Name:</label>
+<input type="text" id="name" name="name" required>
+</div>
+<div class="form-group">
+<label for="email">Email:</label>
+<input type="email" id="email" name="email" required>
+</div>
+<div class="form-group">
+<label for="message">Message:</label>
+<textarea id="message" name="message" rows="4" required></textarea>
+</div>
+<button type="submit">Send Message</button>
+</form>
+</section>          
+          
+         
+    
+    <div id="loginModal" class="modal">
+      <div class="modal-content">
+        <span class="close">&times;</span>
+        <h2>Login</h2>
+        <form method="post" action="login.php">
+          <input type="email" name="email" placeholder="Email" required>
+          <input type="password" name="password" placeholder="Password" required>
+          <button type="submit">Login Page</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Registration Modal -->
+    <div id="registrationModal" class="modal">
+      <div class="modal-content">
+        <span class="close">&times;</span>
+        <h2>Register</h2>
+        <form method="post" action="register.php">
+          <input type="email" name="email" placeholder="Email" required>
+          <input type="password" name="password" placeholder="Password" required>
+          <button type="submit">Register</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Trigger login and registration modals 
+    <button id="loginBtn">Login</button>
+    <button id="registrationBtn">Register</button>-->
+  </div>
+
+  <script>
+    // Get the login and registration modals
+    var loginModal = document.getElementById("loginModal");
+    var registrationModal = document.getElementById("registrationModal");
+
+    // Get the buttons that open the modals
+    var loginBtn = document.getElementById("loginBtn");
+    var registrationBtn = document.getElementById("registrationBtn");
+
+    // Get the <span> elements that close the modals
+    var loginCloseBtn = loginModal.getElementsByClassName("close")[0];
+    var registrationCloseBtn = registrationModal.getElementsByClassName("close")[0];
+
+    // When the user clicks the button, open the modal
+    loginBtn.onclick = function() {
+      loginModal.style.display = "block";
+    }
+
+    registrationBtn.onclick = function() {
+      registrationModal.style.display = "block";
+    }
+
+    // When the user clicks on the close button, close the modal
+    loginCloseBtn.onclick = function() {
+      loginModal.style.display = "none";
+    }
+
+    registrationCloseBtn.onclick = function() {
+      registrationModal.style.display = "none";
+    }
+
+    // When the user clicks anywhere outside of the modal, close it
+    window.onclick = function(event) {
+      if (event.target == loginModal) {
+        loginModal.style.display = "none";
+      } else if (event.target == registrationModal) {
+        registrationModal.style.display = "none";
+      }
+    }
+  </script>
+</body>
+</html>

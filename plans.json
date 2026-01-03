@@ -1,0 +1,58 @@
+[
+{
+"plan": "Free",  
+"price": "0.00",
+"allowed_chatbots": 1,        
+"credits": 1000,
+"context_memory": "yes",
+"disk_memory": "no",
+"personality": 1,
+"copy": "yes",
+"export": "no",
+"text_import": "no",        
+"personas": 0,
+"personas_module": "no"
+},        
+{
+"plan": "Silver",  
+"price": "9.90",
+"allowed_chatbots": 2,        
+"credits": 5000,
+"context_memory": "yes",
+"disk_memory": "no",
+"personality": 3,
+"copy": "yes",
+"export": "yes",
+"text_import": "no",        
+"personas": 0,
+"personas_module": "no"    
+},
+{
+"plan": "Gold",
+"price": "19.90", 
+"allowed_chatbots": 4,        
+"credits": 7500,
+"context_memory": "yes",
+"disk_memory": "yes (20MB)",
+"personality": 5,
+"copy": "yes",
+"export": "yes",
+"text_import": "yes (15000 chars)",        
+"personas": 1,
+"personas_module": "basic"
+},
+{
+"plan": "Platinum",
+"price": "29.90",
+"allowed_chatbots": 6,        
+"credits": 10000,
+"context_memory": "yes",
+"disk_memory": "yes (40MB)",
+"personality": 15,
+"copy": "yes",
+"export": "yes",
+"text_import": "yes (30000 chars)",                
+"personas": 1,
+"personas_module": "advanced"
+}
+]

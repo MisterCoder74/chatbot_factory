@@ -1,0 +1,49 @@
+<?php
+session_start();
+
+// Controlla se l'ID utente è presente nella sessione
+if (!isset($_SESSION["user_id"])) {
+die("User not logged in");
+}
+
+// Carica i dati utente da userdata.json
+$user_data_json = file_get_contents('userdata.json');
+$readusers_data = json_decode($user_data_json, true);
+
+// Trova l'utente specifico utilizzando l'ID dell'utente loggato
+$user_found = false;
+
+foreach ($readusers_data as &$user) {
+if ($user['id'] == $_SESSION["user_id"]) {
+$user['plan_type'] = 'Silver'; // Cambia il piano dell'utente a 'Silver'
+$user_found = true;
+break;
+}
+}
+
+if (!$user_found) {
+die("User data not found");
+}
+
+// Salva nuovamente i dati utente in userdata.json
+$new_user_data_json = json_encode($readusers_data, JSON_PRETTY_PRINT); // Formatta il JSON
+file_put_contents('userdata.json', $new_user_data_json);
+
+// Parte HTML per visualizzare il messaggio di conferma
+?>
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Piano Aggiornato</title>
+<link rel="stylesheet" href="styles.css"> <!-- Aggiungi il tuo stile CSS se necessario -->
+</head>
+<body>
+<div style="text-align: center; padding: 50px;">
+<h1>Complimenti!</h1>
+<p>Hai aggiornato con successo il tuo piano a <strong>Silver</strong>.</p>
+<a href="dashboard.html" style="text-decoration: none; color: white; background-color: #4CAF50; padding: 10px 20px; border-radius: 5px;">Torna al Dashboard</a>
+</div>
+</body>
+</html>
