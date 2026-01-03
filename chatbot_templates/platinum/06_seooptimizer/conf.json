@@ -1,13 +1,14 @@
 [
     {
-        "chatbot_id": "a4a4a4",
+        "chatbot_id": "c6c6c6",
         "credits_count": 10000,
         "background_color": "#ffffff",
-        "style_color": "#0000ff",
+        "style_color": "#ff0066",
         "text_color": "#000000",
-        "img_url": "conv_chatbot.jpg",
-        "header": "Welcome to your Platinum Chatbot!",
-        "chatbot_name": "Chatbot",
-        "chatbot_apikey": ""
+        "img_url": "seo_optimizer.jpg",
+        "header": "SEO Optimizer - Website Performance Analyzer",
+        "chatbot_name": "SEO Optimizer",
+        "chatbot_apikey": "",
+        "type": "seo_analyzer"
     }
 ]

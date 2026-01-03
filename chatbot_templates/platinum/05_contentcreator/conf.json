@@ -1,13 +1,14 @@
 [
     {
-        "chatbot_id": "a4a4a4",
-        "credits_count": 10000,
+        "chatbot_id": "c5c5c5",
+        "credits_count": 8000,
         "background_color": "#ffffff",
-        "style_color": "#0000ff",
+        "style_color": "#0066ff",
         "text_color": "#000000",
-        "img_url": "conv_chatbot.jpg",
-        "header": "Welcome to your Platinum Chatbot!",
-        "chatbot_name": "Chatbot",
-        "chatbot_apikey": ""
+        "img_url": "content_creator.jpg",
+        "header": "Content Creator - Social Media Post Generator",
+        "chatbot_name": "Content Creator",
+        "chatbot_apikey": "",
+        "type": "content_generator"
     }
 ]
