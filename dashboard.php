@@ -642,7 +642,7 @@ endforeach;
                         <p>Context Memory Array</p>
                         <p>Multiple Personalities <small>(5)</small></p>
                         <p>Chat Export</p> 
-                        <p>TXT File Import in Chatbots<br><small>(2 formats, up to 15000 chars)</small></p>     
+                        <p>TXT File Import in Chatbots<br><small>(10 formats, up to 15000 chars)</small></p>     
                         <p>Resident Memory on Disk <small>(up to 20MB)</small></p>
                         <p>Low-Res Image Generation <small>(dall-e-2)</small></p>                            
                         <p>1 AI Persona (Basic Module)</p>
@@ -664,7 +664,7 @@ endforeach;
                         <p>Context Memory Array</p>
                         <p>Multiple Personalities <small>(15)</small></p>
                         <p>Chat Export</p>
-                        <p>TXT File Import in Chatbots<br><small>(2 formats, up to 30000 chars)</small></p>
+                        <p>TXT File Import in Chatbots<br><small>(10 formats, up to 30000 chars)</small></p>
                         <p>Image Vision in Chatbots</p>    
                         <p>Resident Memory on Disk <small>(up to 40MB)</small></p>
                         <p>Low-Res and Hi-Res Image Generation <small>(dall-e-2/3)</small></p>                            
@@ -759,8 +759,8 @@ endforeach;
             <td>TXT File Import in Chatbots</td>
             <td>No</td>
             <td>No</td>
-            <td>Two formats, up to 15000 characters</td>
-            <td>Multiple formats, up to 30000 characters</td>
+            <td>10 formats, up to 15000 characters</td>
+            <td>10 formats, up to 30000 characters</td>
         </tr>
         <tr>
             <td>Image Vision in Chatbots</td>
