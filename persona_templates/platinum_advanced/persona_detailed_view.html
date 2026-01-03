@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Persona Data</title>
+    <style>
+.character-sheet {
+    max-width: 700px;
+    margin: 0 auto;
+    font-family: Arial, sans-serif;
+    background-color: #f4f4f4;
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+.character-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 20px;
+    border-bottom: 2px solid #333;
+    padding-bottom: 10px;
+}
+
+.character-image {
+    width: 150px;
+    height: 150px;
+    object-fit: cover;
+    border-radius: 50%;
+    margin-right: 20px;
+}
+
+.header-text h1 {
+    margin: 0;
+    color: #333;
+}
+
+.character-section {
+    margin-bottom: 20px;
+}
+
+.character-section h2 {
+    border-bottom: 1px solid #ccc;
+    padding-bottom: 5px;
+    margin-bottom: 10px;
+    color: #555;
+}
+
+.character-section table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.character-section table th {
+    text-align: left;
+    width: 40%;
+    padding: 8px;
+    background-color: #e9e9e9;
+}
+
+.character-section table td {
+    padding: 8px;
+    border-bottom: 1px solid #ddd;
+}
+
+.spouse-image {
+    width: 120px;
+    height: 120px;
+    object-fit: cover;
+    border-radius: 50%;
+    display: block;
+    margin: 0 auto 15px;
+}
+    </style>
+</head>
+<body>
+<div id="user-card-container"></div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+// Carica direttamente il file persona_details.json
+fetch('persona_details.json')
+.then(response => {
+if (!response.ok) {
+throw new Error('Network response was not ok ' + response.statusText);
+}
+return response.json();
+})
+.then(data => {
+const userCardContainer = document.getElementById('user-card-container');
+
+// Controlla se la persona è configurata
+if (!data.Persona || data.Persona.length === 0) {
+// Messaggio se il file JSON è vuoto
+const message = document.createElement('p');
+message.innerHTML = 'Your Persona is not set up, please click <a href="persona_setup_advanced.html" target="_blank">here</a> to fill the Persona configuration form.';
+userCardContainer.appendChild(message);
+return; // Esci dalla funzione se non ci sono dati
+}
+
+const persona = data.Persona[0];
+const userCard = document.createElement('div');
+userCard.className = 'character-sheet';
+
+// Header con Nome e Immagine
+const header = document.createElement('div');
+header.className = 'character-header';
+
+const userImage = document.createElement('img');
+userImage.src = persona.Img || 'default-avatar.png';
+userImage.className = 'character-image';
+header.appendChild(userImage);
+
+const headerText = document.createElement('div');
+headerText.className = 'header-text';
+const userName = document.createElement('h1');
+userName.textContent = `${persona.Name} ${persona.Surname}`;
+headerText.appendChild(userName);
+header.appendChild(headerText);
+
+const headerPara = document.createElement('p');
+headerPara.innerHTML = `Click <a href="persona_setup_advanced.html" target="_blank">HERE</a> to <b>edit</b> Persona details.`;
+
+userCard.appendChild(header);
+userCard.appendChild(headerPara);
+
+// Sezione Anagrafica
+const anagraficaSection = document.createElement('section');
+anagraficaSection.className = 'character-section';
+const anagraficaTitle = document.createElement('h2');
+anagraficaTitle.textContent = 'BASIC INFO';
+anagraficaSection.appendChild(anagraficaTitle);
+
+const anagraficaTable = document.createElement('table');
+anagraficaTable.innerHTML = `
+<tr>
+<th>Birth Date</th>
+<td>${persona.BirthDate}</td>
+</tr>
+<tr>
+<th>Birth Day (of week)</th>
+<td>${persona.BirthDay}</td>
+</tr>
+<tr>
+<th>Birth Place</th>
+<td>${persona.BirthPlace}</td>
+</tr>
+<tr>
+<th>Zodiac </th>
+<td>${persona.ZodiacalSign}</td>
+</tr>
+<tr>
+<th>Height (cm)</th>
+<td>${persona.Height} cm</td>
+</tr>
+<tr>
+<th>Weight (kg)</th>
+<td>${persona.Weight} kg</td>
+</tr>
+<tr>
+<th>Marital Status</th>
+<td>${persona.MaritalStatus}</td>
+</tr>
+`;
+anagraficaSection.appendChild(anagraficaTable);
+userCard.appendChild(anagraficaSection);
+
+// Sezione Antecedenti
+const backgroundSection = document.createElement('section');
+backgroundSection.className = 'character-section';
+const backgroundTitle = document.createElement('h2');
+backgroundTitle.textContent = 'BACKGROUND AND TRIVIA';
+backgroundSection.appendChild(backgroundTitle);        
+const backgroundDiv = document.createElement('div');
+backgroundDiv.textContent = `${persona.Background}`;
+backgroundDiv.style.textAlign='justify';         
+backgroundSection.appendChild(backgroundDiv);
+userCard.appendChild(backgroundSection);
+
+// Sezione Contatti
+const contattiSection = document.createElement('section');
+contattiSection.className = 'character-section';
+const contattiTitle = document.createElement('h2');
+contattiTitle.textContent = 'CONTACTS';
+contattiSection.appendChild(contattiTitle); 
+const contattiTable = document.createElement('table');
+contattiTable.innerHTML = `
+<tr>
+<th>Website</th>
+<td>${persona.Website} 👉 <a href="${persona.Website}" target="_blank"><small>visit</small></a></td>
+</tr>
+<tr>
+<th>Email</th>
+<td>${persona.Email}</td>
+</tr>
+`;
+contattiSection.appendChild(contattiTable); // Supponendo che contattiSection sia già definita
+userCard.appendChild(contattiSection); // Assicurati di appendere a userCard        
+        
+// Sezione Indirizzi
+const indirizziSection = document.createElement('section');
+indirizziSection.className = 'character-section';
+const indirizziTitle = document.createElement('h2');
+indirizziTitle.textContent = 'ADDRESSES';
+indirizziSection.appendChild(indirizziTitle);
+
+// Indirizzo Attuale
+const currentAddressTable = document.createElement('table');
+currentAddressTable.innerHTML = `
+<tr>
+<th>Current Residence</th>
+<td>${persona.CurrentAddress}</td>
+</tr>
+<tr>
+<th>From Date</th>
+<td>${persona.CurrentAddressMoveDate}</td>
+</tr>
+`;
+indirizziSection.appendChild(currentAddressTable);
+
+// Indirizzi Precedenti
+if (persona.PreviousAddresses && persona.PreviousAddresses.length > 0) {
+const previousAddressesTable = document.createElement('table');
+previousAddressesTable.innerHTML = `
+<thead>
+<tr>
+<th>Previous Address</th>
+<th>From</th>
+<th>To</th>
+</tr>
+</thead>
+<tbody>
+${persona.PreviousAddresses.map(address => {
+const key = Object.keys(address)[0];
+return address[key].Address ? `
+<tr>
+<td>${address[key].Address}</td>
+<td>${address[key].FromDate}</td>
+<td>${address[key].ToDate}</td>
+</tr>
+` : '';
+}).join('')}
+</tbody>
+`;
+indirizziSection.appendChild(previousAddressesTable);
+}
+
+userCard.appendChild(indirizziSection);
+
+// Sezione Coniuge
+const coniugeSection = document.createElement('section');
+coniugeSection.className = 'character-section';
+const coniugeTitle = document.createElement('h2');
+coniugeTitle.textContent = 'PARTNER INFO (if any)';
+coniugeSection.appendChild(coniugeTitle);
+
+const spouseImage = document.createElement('img');
+spouseImage.src = persona.SpouseImg || 'default-avatar.png';
+spouseImage.className = 'spouse-image';
+coniugeSection.appendChild(spouseImage);
+
+const spouseTable = document.createElement('table');
+spouseTable.innerHTML = `
+<tr>
+<th>Name & Surname</th>
+<td>${persona.SpouseName} ${persona.SpouseSurname}</td>
+</tr>
+<tr>
+<th>Birth Date</th>
+<td>${persona.SpouseBirthdate}</td>
+</tr>
+<tr>
+<th>Birth Place</th>
+<td>${persona.SpouseBirthplace}</td>
+</tr>
+`;
+coniugeSection.appendChild(spouseTable);
+
+userCard.appendChild(coniugeSection);
+
+userCardContainer.appendChild(userCard);
+})
+.catch(error => console.error('Error while loading JSON file: ', error));
+});
+</script>
+</body>
+</html>

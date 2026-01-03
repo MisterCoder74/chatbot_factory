@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Advanced Persona Form</title>
+<style>
+body {
+font-family: Arial, sans-serif;
+margin: 20px;
+box-sizing: border-box;        
+}
+form {
+padding: .25rem;        
+width: 600px;
+margin: auto;
+box-sizing: border-box;        
+}
+label {
+display: block;
+margin-top: 12px;
+}
+input, select, textarea {
+width: 95%;
+padding: 8px;
+margin-top: 5px;
+}
+.form-group {
+margin-bottom: 15px;
+}
+button {
+margin-top: .25rem;        
+padding: 10px 15px;
+background-color: #4CAF50;
+color: white;
+border: none;
+cursor: pointer;
+}
+button:hover {
+background-color: #45a049;
+}
+</style>
+</head>
+<body>
+
+<h1>Persona Information Advanced Form</h1>
+
+<form action="save_advanced_persona.php" method="POST" enctype="multipart/form-data" onsubmit="return validateForm()">
+<fieldset>
+        <legend>Persona Basic Information</legend>        
+<div class="form-group">
+<label for="name">Name:</label>
+<input type="text" id="name" name="name" required>
+</div>
+<div class="form-group">
+<label for="surname">Surname:</label>
+<input type="text" id="surname" name="surname" required>
+</div>
+<div class="form-group">
+<label for="birthdate">Birth Date:</label>
+<input type="date" id="birthdate" name="birthdate" min="1950-01-01" max="2010-12-31">
+</div>
+<div class="form-group">
+<label for="birthday">Birth Day:</label>
+<input type="text" id="birthday" name="birthday">
+</div>
+<div class="form-group">
+<label for="birthplace">Birth Place:</label>
+<input type="text" id="birthplace" name="birthplace">
+</div>
+<div class="form-group">
+<label for="zodiacsign">Zodiac Sign:</label>
+<input type="text" id="zodiacsign" name="zodiacsign">
+</div>
+<div class="form-group">
+<label for="img">Upload Image:</label>
+<input type="file" id="img" name="img" accept="image/*">
+</div>
+<div class="form-group">
+<label for="height">Height:</label>
+<input type="text" id="height" name="height">
+</div>
+<div class="form-group">
+<label for="weight">Weight:</label>
+<input type="text" id="weight" name="weight">
+</div>
+<div class="form-group">
+<label for="currentaddress">Current Address:</label>
+<input type="text" id="currentaddress" name="currentaddress">
+</div>
+<div class="form-group">
+<label for="currentaddressmovedate">Current Address Move Date:</label>
+<input type="date" id="currentaddressmovedate" name="currentaddressmovedate">
+</div>
+</fieldset>           
+<br>
+<fieldset>
+<legend>Persona Previous Addresses (dates can be approximative)</legend> 
+
+<div class="previous-address">
+<h4>Address 1:</h4>
+<div class="form-group">
+<label for="address1">Address:</label>
+<input type="text" id="address1" name="address1" placeholder="Enter Address">
+</div>
+<div class="form-group">
+<label for="address1_from">From Date:</label>
+<input type="date" id="address1_from" name="address1_from">
+</div>
+<div class="form-group">
+<label for="address1_to">To Date:</label>
+<input type="date" id="address1_to" name="address1_to">
+</div>
+</div>
+
+<div class="previous-address">
+<h4>Address 2:</h4>
+<div class="form-group">
+<label for="address2">Address:</label>
+<input type="text" id="address2" name="address2" placeholder="Enter Address">
+</div>
+<div class="form-group">
+<label for="address2_from">From Date:</label>
+<input type="date" id="address2_from" name="address2_from">
+</div>
+<div class="form-group">
+<label for="address2_to">To Date:</label>
+<input type="date" id="address2_to" name="address2_to">
+</div>
+</div>
+
+<div class="previous-address">
+<h4>Address 3:</h4>
+<div class="form-group">
+<label for="address3">Address:</label>
+<input type="text" id="address3" name="address3" placeholder="Enter Address">
+</div>
+<div class="form-group">
+<label for="address3_from">From Date:</label>
+<input type="date" id="address3_from" name="address3_from">
+</div>
+<div class="form-group">
+<label for="address3_to">To Date:</label>
+<input type="date" id="address3_to" name="address3_to">
+</div>
+</div>
+</fieldset>        
+<br>
+<fieldset>
+<legend>Persona Current Relationship</legend> 
+<div class="form-group">
+<label for="maritalstatus">Marital Status:</label>
+<input type="text" id="maritalstatus" name="maritalstatus">
+</div>
+<div class="form-group">
+<label for="spousesurname">Partner Surname:</label>
+<input type="text" id="spousesurname" name="spousesurname">
+</div>
+<div class="form-group">
+<label for="spouse">Partner Name:</label>
+<input type="text" id="spouse" name="spouse">
+</div>
+<div class="form-group">
+<label for="spousebirthdate">Partner Birth Date:</label>
+<input type="date" id="spousebirthdate" name="spousebirthdate" min="1950-01-01" max="2010-12-31">
+</div>
+<div class="form-group">
+<label for="spousebirthplace">Partner Birth Place:</label>
+<input type="text" id="spousebirthplace" name="spousebirthplace">
+</div>
+<div class="form-group">
+<label for="spouseimg">Upload Spouse Image:</label>
+<input type="file" id="spouseimg" name="spouseimg" accept="image/*">
+</div>
+</fieldset> 
+<br>
+<fieldset>
+<legend>Persona Background and Contacts</legend> 
+<div class="form-group">
+<label for="biography">Bio and Background:</label>
+<textarea id="biography" name="biography" cols=14 rows=8 placeholder="Insert as many info as you can (max 3500 chars)" oninput="updateCharCount()"></textarea><br>
+Remaining chars: <span id="charsleft">3500</span>        
+</div>
+<div class="form-group">
+<label for="website">Personal Website URL:</label>
+<input type="url" id="website" name="website" placeholder="https://example.com">
+</div>
+
+<div class="form-group">
+<label for="email">Personal Email:</label>
+<input type="email" id="email" name="email" placeholder="youremail@example.com">
+</div>        
+
+</fieldset>         
+<button type="submit">Submit</button>
+</form>
+     
+<script>
+const maxChars = 3500; // numero massimo di caratteri
+const textarea = document.getElementById('biography');
+const charsLeftSpan = document.getElementById('charsleft');
+
+function updateCharCount() {
+const currentLength = textarea.value.length; // lunghezza corrente del testo
+const remainingChars = maxChars - currentLength; // caratteri rimanenti
+charsLeftSpan.textContent = remainingChars; // aggiorna il contatore
+
+// Se la lunghezza supera il massimo, tronca il testo
+if (currentLength > maxChars) {
+textarea.value = textarea.value.substring(0, maxChars);
+charsLeftSpan.textContent = 0; // Se i caratteri diventano 0
+}
+}
+        
+function validateForm() {
+// Add JavaScript validation here if needed
+return true; // return false to prevent form submission
+}
+</script>
+</body>
+</html>
