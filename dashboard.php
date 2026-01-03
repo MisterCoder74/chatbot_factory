@@ -50,9 +50,9 @@ $can_create_chatbot = $chatbot_count < $selectedPlan['allowed_chatbots'];
 $can_have_persona = ($selectedPlan['plan'] === 'Gold' || $selectedPlan['plan'] === 'Platinum');
 $can_create_persona = $persona_count < $selectedPlan['personas'];
 
-// Calcola totale crediti per chatbot
-$available_credits = $chatbot_count * $selectedPlan['credits'];
-$max_available_credits = $selectedPlan['allowed_chatbots'] * $selectedPlan['credits'];
+// Calcola totale crediti per il piano (non più moltiplicati per chatbot)
+$available_credits = $selectedPlan['credits'];
+$max_allowed_chatbots = $selectedPlan['allowed_chatbots'];
 
 // Salva i dati aggiornati back to userdata.json con JSON_PRETTY_PRINT
 file_put_contents('userdata.json', json_encode($readusers_data, JSON_PRETTY_PRINT));
@@ -397,10 +397,13 @@ cursor: pointer;
             
     </style>
 </head>
-<body>
+<body data-chatbot-count="<?php echo $chatbot_count; ?>" 
+      data-allowed-chatbots="<?php echo $selectedPlan['allowed_chatbots']; ?>"
+      data-persona-count="<?php echo $persona_count; ?>"
+      data-allowed-personas="<?php echo $selectedPlan['personas']; ?>">
     <header>Vivacity Design Chatbot Manager Dashboard</header>
         
- 			<div class="section" id="account">
+             <div class="section" id="account">
  <h2>User Account Details <span style="float: right;"><a href="logout.php">❌</a></span></h2>
   <div class="card-container">
    
@@ -411,8 +414,8 @@ cursor: pointer;
         <th>Plan Type</th>
         <th>Signup Date</th>
         <th>Last Seen</th>
-        <th>Available Credits</th>
-        <th>Maximum Available Credits</th>      
+        <th>Total Credits for This Plan</th>
+        <th>Maximum Allowed Chatbots</th>      
         <th>Chatbots</th>
               <?php if ($can_have_persona): ?>
               <th>Personas</th>
@@ -424,8 +427,8 @@ cursor: pointer;
         <td><?php echo htmlspecialchars($user_data["plan_type"]); ?></td>
         <td><?php echo htmlspecialchars($user_data["signup_date"]); ?></td>
         <td><?php echo htmlspecialchars($user_data["lastseen_date"]); ?></td>
-        <td><?php echo htmlspecialchars($available_credits); ?> for <?php echo $chatbot_count; ?> chatbot </td> <!-- IMPORTANTE: TOGLIERE I CREDITS DA ACCOUNT UTENTE -->
-        <td><?php echo htmlspecialchars($max_available_credits); ?> for <?php echo htmlspecialchars($selectedPlan['allowed_chatbots']); ?> chatbots</td> <!-- IMPORTANTE: TOGLIERE I CREDITS DA ACCOUNT UTENTE -->      
+        <td><?php echo htmlspecialchars($available_credits); ?> credits</td> 
+        <td><?php echo htmlspecialchars($max_allowed_chatbots); ?> chatbots</td> 
         <td><?php echo $chatbot_count; ?></td>
               <?php if ($can_have_persona): ?>
               <td><?php echo $persona_count; ?></td>
@@ -554,6 +557,8 @@ endforeach;
 <?php else: ?>
 <p>This plan does not allow Persona creation.</p>
 <?php endif; ?>
+<?php else: ?>
+<p>You have reached the maximum number of Personas allowed for your plan.</p>
 <?php endif; ?>
 </div>
 <?php endif; ?>        
@@ -582,6 +587,16 @@ endforeach;
 <div class="image-placeholder"><img src="chatbot_face_05.jpg"></div>
 <p class="cost">Gold / Platinum only</p>
 <button class="button create-chatbot" data-chatbot-type="Image Rebuilder Chatbot">Create Image Cartoonifier Chatbot</button>
+</div>
+<div class="card">
+<div class="image-placeholder"><img src="chatbot_face_06.jpg"></div>
+<p class="cost">Platinum only</p>
+<button class="button create-chatbot" data-chatbot-type="Content Creation Chatbot">Create Content Creation Chatbot</button>
+</div>
+<div class="card">
+<div class="image-placeholder"><img src="chatbot_face_02.jpg"></div>
+<p class="cost">Platinum only</p>
+<button class="button create-chatbot" data-chatbot-type="SEO Optimizer Chatbot">Create SEO Optimizer Chatbot</button>
 </div>
 
 <?php else: ?>
@@ -903,6 +918,15 @@ modal.style.display = 'none'; // Nascondi il modale se si clicca fuori di esso
 createButton.addEventListener('click', function() {
 const chatbotType = modalHeader.textContent; // Riconosce il tipo di chatbot
 
+// Quota validation
+const currentChatbotCount = parseInt(document.body.getAttribute('data-chatbot-count'));
+const allowedChatbots = parseInt(document.body.getAttribute('data-allowed-chatbots'));
+
+if (currentChatbotCount >= allowedChatbots) {
+    alert('Error: Chatbot limit reached for your plan');
+    return;
+}
+
 // Recupera i valori dal modale
 const backgroundColor = document.getElementById('background-color').value;
 const textColor = document.getElementById('text-color').value;
@@ -986,6 +1010,15 @@ modal.style.display = 'none'; // Nascondi il modale se si clicca fuori di esso
 // Funzione di creazione della persona
 personaCreateButton.addEventListener('click', function() {
 const personaType = modalHeader.textContent; // Riconosce il tipo di chatbot
+
+// Quota validation
+const currentPersonaCount = parseInt(document.body.getAttribute('data-persona-count'));
+const allowedPersonas = parseInt(document.body.getAttribute('data-allowed-personas'));
+
+if (currentPersonaCount >= allowedPersonas) {
+    alert('Error: Persona limit reached for your plan');
+    return;
+}
 
 // Recupera i valori dal modale
 const backgroundColor = document.getElementById('persona-background-color').value;

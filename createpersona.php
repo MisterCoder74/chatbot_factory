@@ -17,18 +17,34 @@ try {
     $all_users_data = json_decode(file_get_contents('userdata.json'), true);
         
     foreach ($all_users_data as $user) {
-	if ($user["id"] === $user_id) {
-	$current_user_data = $user;
-	break;
-	}
-	}  
+    if ($user["id"] === $user_id) {
+    $current_user_data = $user;
+    break;
+    }
+    }  
     // Accedi al valore di plan_type
-	$plan_type = $current_user_data['plan_type'] ?? null;    
+    $plan_type = $current_user_data['plan_type'] ?? null;    
 
     if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['persona_type'])) {
         $persona_type = $_POST['persona_type'];
 
-if ($persona_type === 'Basic Persona') {
+        $plans = json_decode(file_get_contents('plans.json'), true);
+        $selectedPlan = null;
+        foreach ($plans as $plan) {
+            if ($plan['plan'] === $plan_type) {
+                $selectedPlan = $plan;
+                break;
+            }
+        }
+
+        if ($selectedPlan) {
+            $current_persona_count = is_array($current_user_data['personas']) ? count($current_user_data['personas']) : 0;
+            if ($current_persona_count >= $selectedPlan['personas']) {
+                throw new Exception('Persona limit reached for your plan');
+            }
+        }
+
+        if ($persona_type === 'Basic Persona') {
 
 $source_directory = './persona_templates/gold_basic/';
 $files_to_copy = ['conf.json', 'default.png', 'persona_schema.jpg', 'info.txt', 'preloader.gif', 'upload.php', 'save_chat_resmem.php', 'persona_basic_view.html', 'persona_details.json', 'persona_setup_basic.html', 'save_basic_persona.php'];                

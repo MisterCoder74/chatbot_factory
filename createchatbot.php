@@ -17,33 +17,54 @@ try {
     $all_users_data = json_decode(file_get_contents('userdata.json'), true);
         
     foreach ($all_users_data as $user) {
-	if ($user["id"] === $user_id) {
-	$current_user_data = $user;
-	break;
-	}
-	}  
+    if ($user["id"] === $user_id) {
+    $current_user_data = $user;
+    break;
+    }
+    }  
     // Accedi al valore di plan_type
-	$plan_type = $current_user_data['plan_type'] ?? null;    
+    $plan_type = $current_user_data['plan_type'] ?? null;    
 
     if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['chatbot_type'])) {
         $chatbot_type = $_POST['chatbot_type'];
 
-if ($chatbot_type === 'Conversational Chatbot') {
+        $plans = json_decode(file_get_contents('plans.json'), true);
+        $selectedPlan = null;
+        foreach ($plans as $plan) {
+            if ($plan['plan'] === $plan_type) {
+                $selectedPlan = $plan;
+                break;
+            }
+        }
 
-$source_directory = './chatbot_templates/platinum/01_conversational/';
-$files_to_copy = ['conf.json', 'conv_chatbot.jpg', 'default.png', 'info.txt', 'preloader.gif', 'upload.php', 'vupload.php', 'save_chat_resmem.php'];                 
-} elseif ($chatbot_type === 'Image Generation Chatbot') {
-$source_directory = './chatbot_templates/platinum/02_imagecreator/';
-$files_to_copy = ['conf.json', 'image_generator_chatbot.jpg', 'default.png', 'info.txt', 'preloader.gif'];                
-} elseif ($chatbot_type === 'Website Composer Chatbot') {
-$source_directory = './chatbot_templates/platinum/03_websitecreator/';
-$files_to_copy = ['conf.json', 'seo_chatbot.jpg', 'default.png', 'info.txt'];                
-} elseif ($chatbot_type === 'Image Rebuilder Chatbot') {
-$source_directory = './chatbot_templates/platinum/04_imagerebuilder/';
-$files_to_copy = ['conf.json', 'seo_chatbot.jpg', 'default.png', 'info.txt'];                
-} else {
-throw new Exception('Tipo di chatbot non valido');
-}
+        if ($selectedPlan) {
+            $current_chatbot_count = is_array($current_user_data['chatbots']) ? count($current_user_data['chatbots']) : 0;
+            if ($current_chatbot_count >= $selectedPlan['allowed_chatbots']) {
+                throw new Exception('Chatbot limit reached for your plan');
+            }
+        }
+
+        if ($chatbot_type === 'Conversational Chatbot') {
+            $source_directory = './chatbot_templates/platinum/01_conversational/';
+            $files_to_copy = ['conf.json', 'conv_chatbot.jpg', 'default.png', 'info.txt', 'preloader.gif', 'upload.php', 'vupload.php', 'save_chat_resmem.php'];                 
+        } elseif ($chatbot_type === 'Image Generation Chatbot') {
+            $source_directory = './chatbot_templates/platinum/02_imagecreator/';
+            $files_to_copy = ['conf.json', 'image_generator_chatbot.jpg', 'default.png', 'info.txt', 'preloader.gif'];                
+        } elseif ($chatbot_type === 'Website Composer Chatbot') {
+            $source_directory = './chatbot_templates/platinum/03_websitecreator/';
+            $files_to_copy = ['conf.json', 'seo_chatbot.jpg', 'default.png', 'info.txt'];                
+        } elseif ($chatbot_type === 'Image Rebuilder Chatbot') {
+            $source_directory = './chatbot_templates/platinum/04_imagerebuilder/';
+            $files_to_copy = ['conf.json', 'seo_chatbot.jpg', 'default.png', 'info.txt'];                
+        } elseif ($chatbot_type === 'Content Creation Chatbot') {
+            $source_directory = './chatbot_templates/platinum/05_contentcreator/';
+            $files_to_copy = ['conf.json', 'content_chatbot.jpg', 'default.png', 'info.txt', 'preloader.gif', 'upload.php', 'vupload.php', 'save_chat_resmem.php'];                
+        } elseif ($chatbot_type === 'SEO Optimizer Chatbot') {
+            $source_directory = './chatbot_templates/platinum/06_seooptimizer/';
+            $files_to_copy = ['conf.json', 'seo_chatbot.jpg', 'default.png', 'info.txt', 'preloader.gif', 'upload.php', 'vupload.php', 'save_chat_resmem.php'];
+        } else {
+            throw new Exception('Tipo di chatbot non valido');
+        }
 
         $unique_id = substr(str_shuffle('0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'), 0, 6);
         $destination_directory = $user_id . '/chatbots/' . $unique_id . '/';
