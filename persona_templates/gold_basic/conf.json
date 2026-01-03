@@ -1,0 +1,13 @@
+[
+    {
+        "persona_id": "p1p1p1",
+        "credits_count": 5000,
+        "background_color": "#ffffff",
+        "style_color": "#008aff",
+        "text_color": "#000000",
+        "img_url": "persona_schema.jpg",
+        "header": "Welcome to your Basic Persona!",
+        "persona_name": "Basic Persona",
+        "persona_apikey": ""
+    }
+]
