@@ -1,1145 +1,725 @@
 <?php
 session_start();
 
-// Controllo sessione e caricamento dati utente
-if (!isset($_SESSION["user_id"])) {
-die("User not logged in");
+if (!isset($_SESSION['user_id'])) {
+    die('User not logged in');
 }
 
-// Carica i dati utente da userdata.json
-$user_data_json = file_get_contents('../../../userdata.json');
-//echo ($user_data_json);
+$usersPath = '../../../userdata.json';
+$user_data_json = @file_get_contents($usersPath);
 $readusers_data = json_decode($user_data_json, true);
 
 $user_found = false;
 $user_data = null;
 
-// Trova l'utente loggato e aggiorna lastseen_date
 foreach ($readusers_data as &$user) {
-if ($user['id'] == $_SESSION["user_id"]) {
-$user_data = $user;
-$user_found = true;
-
-// Aggiorna ultima visualizzazione
-$user['lastseen_date'] = date("Y-m-d H:i:s");
-break;
-}
+    if ($user['id'] == $_SESSION['user_id']) {
+        $user_data = $user;
+        $user_found = true;
+        $user['lastseen_date'] = date('Y-m-d H:i:s');
+        break;
+    }
 }
 if (!$user_found) {
-die("User data not found");
+    die('User data not found');
 }
 
-// Carica i piani e trova quello dell'utente
-$plans = json_decode(file_get_contents('../../../plans.json'), true);
+$plans = json_decode(@file_get_contents('../../../plans.json'), true);
 $selectedPlan = null;
 foreach ($plans as $plan) {
-if ($plan['plan'] === $user_data["plan_type"]) {
-$selectedPlan = $plan;
-break;
-}
+    if ($plan['plan'] === $user_data['plan_type']) {
+        $selectedPlan = $plan;
+        break;
+    }
 }
 if (!$selectedPlan) {
-die("Invalid plan type");
+    die('Invalid plan type');
 }
 
 $configFilePath = './conf.json';
-$configContent = file_get_contents($configFilePath);
-$config = json_decode($configContent, true);
-
-// Verifica che il file sia stato caricato correttamente
-if ($config === null || !isset($config[0])) {
-die("Errore nel caricamento del file di configurazione.");
+$configContent = @file_get_contents($configFilePath);
+$config = json_decode($configContent ?: '[]', true);
+if (!is_array($config) || !isset($config[0])) {
+    die('Error loading configuration.');
 }
 
-// Estrai le proprietà necessarie dal primo oggetto dell'array
-$chatbotConfig = $config[0]; // Ottieni il primo (e unico) oggetto dell'array
+$chatbotConfig = $config[0];
 
-// Se la richiesta è di aggiornare i crediti
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-// Verifica se ci sono ancora crediti disponibili
-if ($chatbotConfig['credits_count'] > 0) {
-// Scala i crediti di 1
-$chatbotConfig['credits_count'] -= 1;
-
-// Aggiorna il file di configurazione
-$config[0] = $chatbotConfig; // Riporta l'oggetto aggiornato nell'array
-file_put_contents($configFilePath, json_encode($config, JSON_PRETTY_PRINT));
-
-// Risposta JSON di successo
-echo json_encode(['status' => 'success', 'credits_count' => $chatbotConfig['credits_count']]);
-} else {
-// Risposta JSON di errore sui crediti insufficienti
-echo json_encode(['status' => 'error', 'message' => 'Crediti insufficienti.']);
-}
-exit; // Esci dopo aver gestito la richiesta POST
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && empty($_FILES)) {
+    header('Content-Type: application/json');
+    $credits = (int)($chatbotConfig['credits_count'] ?? 0);
+    if ($credits > 0) {
+        $credits -= 1;
+        $chatbotConfig['credits_count'] = $credits;
+        $config[0] = $chatbotConfig;
+        @file_put_contents($configFilePath, json_encode($config, JSON_PRETTY_PRINT));
+        echo json_encode(['status' => 'success', 'credits_count' => $credits]);
+    } else {
+        echo json_encode(['status' => 'error', 'message' => 'Insufficient credits.']);
+    }
+    exit;
 }
 
-// Estrai le proprietà necessarie
-$backgroundColor = isset($chatbotConfig['background_color']) ? $chatbotConfig['background_color'] : '#ffffff';
-$styleColor = isset($chatbotConfig['style_color']) ? $chatbotConfig['style_color'] : '#0000ff';
-$textColor = isset($chatbotConfig['text_color']) ? $chatbotConfig['text_color'] : '#000000';
-$chatbotName = $chatbotConfig['chatbot_name'];
-$chatbotHeading = $chatbotConfig['header'];
-$chatbotId = $chatbotConfig['chatbot_id'];
-$chatbotKey = $chatbotConfig['chatbot_apikey'];
-$chatbotImg = (!empty($chatbotConfig['img_url'])) ? $chatbotConfig['img_url'] : 'default.png';
-
+$backgroundColor = $chatbotConfig['background_color'] ?? '#ffffff';
+$styleColor = $chatbotConfig['style_color'] ?? '#0000ff';
+$textColor = $chatbotConfig['text_color'] ?? '#000000';
+$chatbotName = $chatbotConfig['chatbot_name'] ?? 'Conversational AI';
+$chatbotHeading = $chatbotConfig['header'] ?? 'Chat Assistant';
+$chatbotId = $chatbotConfig['chatbot_id'] ?? '';
+$chatbotKey = $chatbotConfig['chatbot_apikey'] ?? '';
+$chatbotImg = !empty($chatbotConfig['img_url']) ? $chatbotConfig['img_url'] : 'default.png';
+$creditsCount = (int)($chatbotConfig['credits_count'] ?? 0);
 
 function getFullPath() {
-// Ottieni il protocollo HTTP o HTTPS
-$protocol =  "https://" ;
-
-// Ottieni il nome del server
-$host = $_SERVER['HTTP_HOST'];
-
-// Ottieni il percorso della cartella corrente
-$currentPath = rtrim(dirname($_SERVER['PHP_SELF']), '/');
-
-// Combina le parti per formare il percorso completo
-$fullPath = $protocol . $host . $currentPath;
-
-return $fullPath;
+    $protocol = "https://";
+    $host = $_SERVER['HTTP_HOST'];
+    $currentPath = rtrim(dirname($_SERVER['PHP_SELF']), '/');
+    return $protocol . $host . $currentPath;
 }
 
-
-// Definizione di variabili per resident memory
+// Resident memory logic
 if ($selectedPlan['plan'] === 'Gold') {
-$hasResidentMemory = true;
-$maxResidentMemoryMB = 20; // MB
+    $hasResidentMemory = true;
+    $maxResidentMemoryMB = 20;
 } elseif ($selectedPlan['plan'] === 'Platinum') {
-$hasResidentMemory = true;
-$maxResidentMemoryMB = 40; // MB
+    $hasResidentMemory = true;
+    $maxResidentMemoryMB = 40;
 } else {
-$hasResidentMemory = false;
-$maxResidentMemoryMB = 0; // Nessuno spazio
+    $hasResidentMemory = false;
+    $maxResidentMemoryMB = 0;
 }
 
-// Conto chatbot e personas dell'utente
-$chatbot_count = is_array($user_data["chatbots"]) ? count($user_data["chatbots"]) : 0;
-$persona_count = is_array($user_data["personas"]) ? count($user_data["personas"]) : 0;
-
-// Verifica limiti
-$can_create_chatbot = ($chatbot_count < $selectedPlan['allowed_chatbots']);
-$can_have_persona = ($selectedPlan['plan'] === 'Gold' || $selectedPlan['plan'] === 'Platinum');
-$can_create_persona = ($persona_count < $selectedPlan['personas']);
-
-// Calcolo spazio occupato in MB della resident memory
 $directory = 'resident_memory';
 $files = [];
 $totalSize = 0;
-
 if (is_dir($directory)) {
-// Scansione dei file .txt
-$files = array_filter(scandir($directory), function($file) {
-return pathinfo($file, PATHINFO_EXTENSION) === 'txt';
-});
-
-// Calcolo totale dimensione
-foreach ($files as $file) {
-$totalSize += filesize($directory . '/' . $file);
+    $files = array_filter(scandir($directory), function($file) {
+        return pathinfo($file, PATHINFO_EXTENSION) === 'txt';
+    });
+    foreach ($files as $file) {
+        $totalSize += filesize($directory . '/' . $file);
+    }
 }
-}
-// Conversione in MB
 $totalSizeMB = $totalSize / (1024 * 1024);
+$showFileList = !empty($files);
 
-$showFileList = !empty($files); // Verifica se ci sono file
-// Variabile di controllo per spazio residuo
-$hasSpace = true;
-
-if ($hasResidentMemory) {
-// Imposta soglie di avviso (5MB prima del limite)
-$warningThresholdMB = 5;
-
-// Se lo spazio residuo è sotto la soglia
-if ($totalSizeMB >= ($maxResidentMemoryMB - $warningThresholdMB) && $totalSizeMB < $maxResidentMemoryMB) {
-$remaining = round($maxResidentMemoryMB - $totalSizeMB, 2);
-echo "<script>alert('Attenzione: spazio residuo limitato (" . $remaining . " MB rimanenti).');</script>";
-}
-// Se lo spazio totale occupato ha raggiunto o superato il limite
-elseif ($totalSizeMB >= $maxResidentMemoryMB) {
-$hasSpace = false;
-echo "<script>
-if (document.getElementById('savetodisk')) {
-document.getElementById('savetodisk').disabled = true;
-}
-alert('Limite di spazio raggiunto (" . $maxResidentMemoryMB . " MB). Si prega di cancellare vecchie chat dalla resident memory.');
-</script>";
-}
-}
-
-// Salvataggio aggiornamenti userdata
-file_put_contents('../../../userdata.json', json_encode($readusers_data, JSON_PRETTY_PRINT));
+@file_put_contents($usersPath, json_encode($readusers_data, JSON_PRETTY_PRINT));
 ?>
 
-<!DOCTYPE html>
-<html>
+<!doctype html>
+<html lang="en">
 <head>
-<title><?php echo $chatbotName; ?> - <?php echo $chatbotId; ?></title>
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<meta charset="utf-8">
-<meta name="Description" CONTENT="">
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title><?php echo htmlspecialchars($chatbotName); ?><?php echo $chatbotId ? ' - ' . htmlspecialchars($chatbotId) : ''; ?></title>
 
-<style>
-* {
-margin: 0;
-padding: 0;
-box-sizing: border-box;
-}
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
 
-body {
-background: <?php echo $backgroundColor; ?>;
-color: <?php echo $textColor; ?>;
-height: 100%;
-}
-.fixedhead {
-background-color: <?php echo $styleColor; ?>;
-padding: .5rem 0;        
-height: auto;
-width: 100%;
-display: flex;
-border: 1px solid <?php echo $styleColor; ?>;        
-flex-direction: column;
-align-items: center;        
-}   
-        
-nav {
-display: flex;
-justify-content: space-between;
-align-items: center;
-flex-direction: column;
-align-items: center;  
-height: auto;        
-} 
-        
-nav h2 {
-font-size: 1.8rem;
-        margin: .5rem auto;
-}        
-        
-.userinput {
-  margin: 8px auto;
-  background-color: white;
-  padding: 10px;
-  z-index: 9999;
-  width: 100%;
-  height: auto;      
-  box-shadow: 0 4px 10px <?php echo $styleColor; ?>;
-}
-nav img {
-        display: block;
-        width: 48px;
-        height: 48px;
-        border-radius: 50%;
-        box-shadow: 0 2px 8px <?php echo $styleColor; ?>;
-        }        
-
-.main {
-        width: 100%;
-        height: 75%;
-        display: flex;
-}
-.menu {
-width: 20%;
-height: 100vh;
-        padding: 20px 10px;
-        border-right: 1px solid black;
-}   
-      
-.fixedwidth {
-        width: 100%;
-        font-size: .9rem;
-        border-radius: 0;
-        background-color: <?php echo $styleColor; ?>;
-        } 
-.menunotice {
-        width: 100%;
-        font-size: .9rem;
-        border-radius: 0;
-        background-color: <?php echo $styleColor; ?>;
-        text-align: justify;
-        border: 1px solid black;
-padding: 8px 14px;
-margin: 2px 4px; 
-        } 
-        
-#operations, #voperations {
-        width: 100%;
-        
-        display: flex;
-        flex-direction: column;
-        justify-content: space-between;
-        }  
-#feedback, #vfeedback {
-            font-size: 1rem;
-        color: <?php echo $textColor; ?>;
-        padding: 4px 6px;
-            }     
-details {
-        margin-bottom: 12px;
-        }   
-summary {
-        padding: 4px;
-        } 
-        
-.preloader {
-  width: 48px;
-}         
-
-#resmem {
-display: block;        
-/* background-color: <?php echo $backgroundColor; ?>;
-color: <?php echo $textColor; ?>;
-cursor: pointer;
-width: 100%;        
-padding: 8px 14px;
-margin: 2px 4px;        
-font-size: 1rem;
-border-radius: 8px;
-border: 1px solid black; */
-        
-} 
-        
-#resmem ul {
-        background-color: <?php echo $styleColor; ?>;
-        padding: 8px 2px;
-        margin-left: 1rem;
-        }        
-        
-#resmem ul li {
-        cursor: pointer;
-        font-size: .9rem;
-        color: <?php echo $textColor; ?>;
-        }        
-        
-.menu button {
-background-color: <?php echo $styleColor; ?>;
-color: <?php echo $textColor; ?>;
-cursor: pointer;
-width: 100%;        
-padding: 8px 14px;
-margin: 2px 4px;        
-font-size: 1rem;
-border-radius: 8px;
-border: 1px solid black;
-}          
-.menu #selectOption {
- background-color: <?php echo $styleColor; ?>;
-color: <?php echo $textColor; ?>;
-cursor: pointer;
-width: 100%;          
-padding: 8px 14px;
-margin: 2px 4px;        
-font-size: 1rem;
-border-radius: 8px;
-border: 1px solid black;       
-}
-        
-        
-.user-message {
-background-color: <?php echo $styleColor; ?>;
-padding: 10px;
-border: 1px solid black;
-color: <?php echo $textColor; ?>;
-font-size: 1rem;
-border-radius: 5px;
-margin-bottom: 4px;
-}
-
-.chatbot-message {
-background-color: <?php echo $styleColor; ?>;
-padding: 15px;
-color: <?php echo $textColor; ?>;
-font-size: 1rem;
-border: 1px solid black;
-border-radius: 5px;
-margin-bottom: 10px;
-display: flex;
-justify-content: space-between;
-align-items: start;
-}
-.chatbot-message-vertical {
-background-color: <?php echo $styleColor; ?>;
-padding: 15px;
-color: <?php echo $textColor; ?>;
-font-size: 1rem;
-border: 1px solid black;
-border-radius: 5px;
-margin-bottom: 10px;
-display: flex;
-        flex-direction: column;
-justify-content: space-between;
-align-items: start;
-}        
-        
-button {
-background-color: <?php echo $styleColor; ?>;
-color: <?php echo $textColor; ?>;
-cursor: pointer;
-padding: 8px 14px;
-margin: 2px 4px;        
-font-size: 1.2rem;
-border-radius: 8px;
-border: 1px solid black;
-}  
- 
-.btnShimmer {
-        box-shadow: 0 1px 4px <?php echo $textColor; ?>;
+    <style>
+        :root {
+            --cb-bg: <?php echo htmlspecialchars($backgroundColor); ?>;
+            --cb-text: <?php echo htmlspecialchars($textColor); ?>;
+            --cb-accent: <?php echo htmlspecialchars($styleColor); ?>;
         }
-.btnShimmer:hover {
-        background-color: <?php echo $textColor; ?>;
-        color: <?php echo $styleColor; ?>;
-        } 
 
+        body {
+            background: var(--cb-bg);
+            color: var(--cb-text);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        .accent { color: var(--cb-accent); }
+        .btn-accent { background: var(--cb-accent); border-color: var(--cb-accent); color: #fff; }
+        .btn-accent:hover { filter: brightness(0.95); color: #fff; }
+
+        .navbar { 
+            z-index: 1030; 
+            background: rgba(255,255,255,0.9); 
+            backdrop-filter: blur(10px);
+        }
         
-.chathistory {
-  padding: 10px;
-  width: 100%;
-  height: 75%;
-  overflow-y: auto;
-  
-}
+        main {
+            flex: 1;
+            display: flex;
+            overflow: hidden;
+        }
 
-#chat-container {
-height: 100%;
-width: 100%;
-padding: 10px;
-}
+        .sidebar {
+            width: 320px;
+            background: #f8f9fa;
+            border-right: 1px solid rgba(0,0,0,0.1);
+            overflow-y: auto;
+            padding: 1.5rem;
+            display: none;
+        }
 
-footer{
-        position: absolute;
-        bottom: 20px;
-        width: 100%;
-display: flex;
-        justify-content: center;
-        align-items: center;
-        font-size: .9rem;
-color: black;
+        @media (min-width: 992px) {
+            .sidebar { display: block; }
+        }
 
-}
+        .chat-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: #fff;
+            position: relative;
+        }
 
-input {
-font-size: 1.2rem;
-color: black;
-border-radius: 10px;
-box-shadow: 0px 4px 10px grey;
-padding: 8px;
-width: 80%;
-margin: 0 auto;
-}        
-</style>
+        #chat-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .message-bubble {
+            max-width: 80%;
+            padding: 1rem 1.25rem;
+            border-radius: 1.2rem;
+            position: relative;
+            line-height: 1.5;
+            word-wrap: break-word;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+
+        .message-guest {
+            align-self: flex-end;
+            background: var(--cb-accent);
+            color: #fff;
+            border-bottom-right-radius: 0.2rem;
+        }
+
+        .message-bot {
+            align-self: flex-start;
+            background: #f8f9fa;
+            color: #212529;
+            border-bottom-left-radius: 0.2rem;
+            border: 1px solid rgba(0,0,0,0.08);
+        }
+
+        .input-area {
+            padding: 1.5rem 2rem;
+            background: #fff;
+            border-top: 1px solid rgba(0,0,0,0.08);
+        }
+
+        .tool-card {
+            background: #fff;
+            border-radius: 12px;
+            border: 1px solid rgba(0,0,0,0.08);
+            padding: 1.25rem;
+            margin-bottom: 1.25rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+        }
+
+        .tool-card h6 {
+            font-weight: 700;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            margin-bottom: 1rem;
+            color: #868e96;
+        }
+
+        .file-link {
+            cursor: pointer;
+            color: var(--cb-accent);
+            text-decoration: none;
+            display: block;
+            padding: 6px 0;
+            font-size: 0.85rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            transition: opacity 0.2s;
+        }
+
+        .file-link:hover { opacity: 0.7; }
+
+        .preloader { width: 32px; height: 32px; }
+
+        .loading-dots span {
+            animation: blink 1.4s infinite both;
+            font-size: 1.4rem;
+        }
+        .loading-dots span:nth-child(2) { animation-delay: .2s; }
+        .loading-dots span:nth-child(3) { animation-delay: .4s; }
+        @keyframes blink {
+            0% { opacity: .2; }
+            20% { opacity: 1; }
+            100% { opacity: .2; }
+        }
+
+        .copy-btn {
+            position: absolute;
+            top: 0.5rem;
+            right: -2.5rem;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+
+        .message-bubble:hover .copy-btn { opacity: 1; }
+    </style>
 </head>
 <body>
 
-<section class="fixedhead">
-<nav>
-<h2><?php echo $chatbotName; ?></h2>
-<h2><?php echo $chatbotHeading; ?></h2>        
-<img src= "<?php echo $chatbotImg; ?>">          
+<nav class="navbar navbar-expand-lg border-bottom shadow-sm">
+    <div class="container-fluid px-4">
+        <div class="d-flex align-items-center gap-3">
+            <button class="btn btn-sm btn-outline-secondary d-lg-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#sidebarMobile">
+                Menu
+            </button>
+            <img src="<?php echo htmlspecialchars($chatbotImg); ?>" alt="Avatar" width="44" height="44" class="rounded-circle border" />
+            <div>
+                <div class="fw-bold lh-1"><?php echo htmlspecialchars($chatbotHeading); ?></div>
+                <div class="small text-secondary mt-1" style="font-size: 0.75rem;">Credits: <span id="creditsCount"><?php echo (int)$creditsCount; ?></span></div>
+            </div>
+        </div>
+    </div>
 </nav>
-<div class="userinput">        
-<input type="text" id="user-input" placeholder="Type a message..." onkeydown="verifyEnter(event)" />
-      
-<button onclick="sendMessage()">Send</button>
-</div>        
-</section>
-        
-<div class="main">
-<section class="menu">        
-<!-- Nascondi o mostra in base al piano -->
-<?php if ($selectedPlan['plan'] !== 'Free' && $selectedPlan['plan'] !== 'Silver'): ?>
-    <?php if ($selectedPlan['plan'] == 'Gold'): ?>
 
-            <details class="menunotice">
-                <summary><h2 style="display: inline-block; cursor: pointer;">TXT Analyzer</h2></summary>
-                <div id="operations">
-                    <form enctype="multipart/form-data" method="POST">
-                        <input class="fixedwidth" type="file" accept=".txt,.html" name="file" id="file-input">
-                        <div id="feedback"></div>
-                        <button id="uploadBtn" type="submit">Upload</button>
-                        <button type="button" class="fixedwidth" onclick="analyzeFile();">Analyze the file</button>
-                    </form>
-                </div>        
-            </details>
-     
-    <?php endif; ?>
-    
-    <?php if ($selectedPlan['plan'] == 'Platinum'): ?>
+<main>
+    <!-- Desktop Sidebar -->
+    <aside class="sidebar bg-light">
+        <?php include_sidebar_content($selectedPlan, $showFileList, $files, $totalSizeMB, $maxResidentMemoryMB); ?>
+    </aside>
 
-            <details class="menunotice">
-                <summary><h2 style="display: inline-block; cursor: pointer;">TXT Analyzer</h2></summary>
-                <div id="operations">
-                    <form enctype="multipart/form-data" method="POST">
-                        <input class="fixedwidth" type="file" accept=".txt,.rtf,.html,.js,.css,.ini,.json,.vb,.cs" name="file" id="file-input">
-                        <div id="feedback"></div>
-                        <button id="uploadBtn" type="submit">Upload</button>
-                        <button type="button" class="fixedwidth" onclick="analyzeFile();">Analyze the file</button>
-                    </form>
-                </div>        
-            </details>
+    <!-- Mobile Sidebar (Offcanvas) -->
+    <div class="offcanvas offcanvas-start" tabindex="-1" id="sidebarMobile" style="width: 300px;">
+        <div class="offcanvas-header border-bottom">
+            <h5 class="offcanvas-title fw-bold">Chat Tools</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas"></button>
+        </div>
+        <div class="offcanvas-body bg-light">
+            <?php include_sidebar_content($selectedPlan, $showFileList, $files, $totalSizeMB, $maxResidentMemoryMB); ?>
+        </div>
+    </div>
 
-    <?php endif; ?>
-<?php endif; ?> <!-- QUESTO ERA MANCANTE! -->
+    <section class="chat-area">
+        <div id="chat-container">
+            <!-- Welcome message -->
+            <div class="message-bubble message-bot shadow-sm">
+                <div class="fw-bold small mb-1 accent"><?php echo htmlspecialchars($chatbotName); ?></div>
+                Hello! I'm your AI assistant. Select a personality or just start chatting!
+            </div>
+        </div>
 
+        <div class="input-area">
+            <div id="errorBox" class="alert alert-danger d-none mb-3 small"></div>
+            <div class="input-group">
+                <input type="text" id="user-input" class="form-control py-2 shadow-none border-secondary-subtle" placeholder="Ask me anything..." autocomplete="off" />
+                <button class="btn btn-accent px-4 fw-semibold" type="button" onclick="sendMessage()">Send</button>
+            </div>
+        </div>
+    </section>
+</main>
 
-<?php if ($selectedPlan['plan'] == 'Platinum'): ?>
-<details class="menunotice">
-<summary><h2 style="display: inline-block; cursor: pointer;">Image Analyzer</h2></summary>
-<div id="voperations">
-<form enctype="multipart/form-data" method="POST">
-<input class="fixedwidth" type="file" accept=".jpg,.png" name="file" id="vfile-input">
-<div id="vfeedback"></div>
-<button id="vuploadBtn" type="submit"> Upload the image</button>
-<button type="button" onclick="getChatGPTResponseIMG();"> Analyze the image</button>
-</form>
-</div>
-</details>
-<?php endif; ?>
-
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script>
-// TXT file JQuery
-$(document).ready(function() {
-$('#uploadBtn').click(function(e) {
-e.preventDefault(); // Previeni il comportamento predefinito del pulsante di submit
-$.ajax({
-url: 'upload.php', // Indirizzo del tuo script PHP
-type: 'POST',
-data: new FormData($('form')[0]),
-processData: false,
-contentType: false,
-success: function (response) {
-const data = JSON.parse(response);
-if (data.status === "success") {
-$('#feedback').html("Your file was uploaded.");
-$('#operations button[type="button"]').attr('onclick', `analyzeFile("${data.url}");`);
-} else {
-$('#feedback').html(data);
-}
-}
-});
-});
-});
-// Vision JQuery
-$(document).ready(function () {
-$('#vuploadBtn').click(function (e) {
-e.preventDefault();
-$.ajax({
-url: 'vupload.php',
-type: 'POST',
-data: new FormData($('form')[1]),
-processData: false,
-contentType: false,
-success: function (response) {
-const data = JSON.parse(response);
-if (data.status === "success") {
-$('#vfeedback').html("Your file was uploaded.");
-$('#voperations button[type="button"]').attr('onclick', `submitImage("${data.url}");`);
-} else {
-$('#vfeedback').html(data);
-}
-}
-});
-});
-});
-</script>
-
-<?php if ($selectedPlan['plan'] !== 'Free'): ?>
-<button id="savetxt">Export Chat</button>
-<?php if ($selectedPlan['plan'] !== 'Free' && $selectedPlan['plan'] !== 'Silver'): ?>
-<button id="savetodisk">Save in Resident Memory</button>
-<br>
-<details class="menunotice" id="resmem">
-<summary><h2 style="display: inline-block; cursor: pointer;">Resident Memory</h2></summary>
-<ul>
-<?php if ($showFileList): ?>
-<?php foreach ($files as $file): ?>
-<li><span class="file-link" data-file="<?php echo htmlspecialchars($file); ?>"><?php echo htmlspecialchars($file); ?></span></li>
-<?php endforeach; ?>
-<?php else: ?>
-<li>No memory files.</li>
-<?php endif; ?>
-</ul>
-<p>Total file size: <?php echo round($totalSizeMB, 3); ?> / <?php echo $maxResidentMemoryMB; ?> MB</p>
-<?php endif; ?>
-</details>
-<?php endif; ?>
-
-<br>
-<h2>Personality List:</h2>
-<select id="selectOption" style="padding: 8px 2px;">
-<option selected>Select a Personality</option>
 <?php
-// Filtra le opzioni in base al piano
-switch ($selectedPlan['plan']) {
-case 'Free':
-echo '<option value="01">Full Stack Developer</option>';
-break;
-case 'Silver':
-echo '<option value="01">Full Stack Developer</option>';
-echo '<option value="02">Generic Music Expert</option>';
-echo '<option value="03">Multi Languages Translator</option>';
-break;
-case 'Gold':
-echo '<option value="01">Full Stack Developer</option>';
-echo '<option value="02">AI Expert</option>';
-echo '<option value="03">Generic Music Expert</option>';
-echo '<option value="04">Generic Movie Expert</option>';
-echo '<option value="05">Multi Languages Translator</option>';
-break;
-case 'Platinum':
-echo '<option value="01">Full Stack Developer</option>';
-echo '<option value="02">AI Expert</option>';
-echo '<option value="03">Generic Music Expert</option>';
-echo '<option value="04">Generic Movie Expert</option>';
-echo '<option value="05">Multi Languages Translator</option>';
-echo '<option value="06">XVII century Poet</option>';
-break;
+function include_sidebar_content($selectedPlan, $showFileList, $files, $totalSizeMB, $maxResidentMemoryMB) {
+    ?>
+    <div class="tool-card">
+        <h6>Personality</h6>
+        <select id="selectOption" class="form-select form-select-sm shadow-none">
+            <option value="default" selected>General Assistant</option>
+            <?php
+            $p = $selectedPlan['plan'];
+            echo '<option value="01">Full Stack Developer</option>';
+            if ($p !== 'Free') {
+                echo '<option value="03">Music Expert</option>';
+                echo '<option value="05">Multi Languages Translator</option>';
+            }
+            if ($p === 'Gold' || $p === 'Platinum') {
+                echo '<option value="02">AI Expert</option>';
+                echo '<option value="04">Movie Expert</option>';
+            }
+            if ($p === 'Platinum') {
+                echo '<option value="06">XVII Century Poet</option>';
+            }
+            ?>
+        </select>
+    </div>
+
+    <?php if ($selectedPlan['plan'] !== 'Free' && $selectedPlan['plan'] !== 'Silver'): ?>
+    <div class="tool-card">
+        <h6>TXT Analyzer</h6>
+        <form id="txtUploadForm" enctype="multipart/form-data">
+            <input class="form-control form-control-sm mb-2 shadow-none" type="file" accept=".txt,.html,.js,.css,.json" name="file" id="file-input">
+            <div id="feedback" class="small text-muted mb-2" style="font-size: 0.7rem;"></div>
+            <div class="d-grid gap-2">
+                <button id="uploadBtn" class="btn btn-sm btn-outline-secondary" type="submit">Upload File</button>
+                <button type="button" class="btn btn-sm btn-accent" id="analyzeBtn" onclick="analyzeFile();" disabled>Analyze File</button>
+            </div>
+        </form>
+    </div>
+    <?php endif; ?>
+
+    <?php if ($selectedPlan['plan'] === 'Platinum'): ?>
+    <div class="tool-card">
+        <h6>Image Analyzer</h6>
+        <form id="imgUploadForm" enctype="multipart/form-data">
+            <input class="form-control form-control-sm mb-2 shadow-none" type="file" accept=".jpg,.png,.jpeg" name="file" id="vfile-input">
+            <div id="vfeedback" class="small text-muted mb-2" style="font-size: 0.7rem;"></div>
+            <div class="d-grid gap-2">
+                <button id="vuploadBtn" class="btn btn-sm btn-outline-secondary" type="submit">Upload Image</button>
+                <button type="button" class="btn btn-sm btn-accent" id="vAnalyzeBtn" onclick="getChatGPTResponseIMG();" disabled>Analyze Image</button>
+            </div>
+        </form>
+    </div>
+    <?php endif; ?>
+
+    <?php if ($selectedPlan['plan'] !== 'Free'): ?>
+    <div class="tool-card">
+        <h6>History Management</h6>
+        <div class="d-grid gap-2">
+            <button class="btn btn-sm btn-outline-secondary" onclick="saveChatContentTxt()">Export Chat (TXT)</button>
+            <?php if ($selectedPlan['plan'] !== 'Silver'): ?>
+            <button class="btn btn-sm btn-outline-secondary" id="savetodisk" onclick="saveChatResMem()">Save to Memory</button>
+            <?php endif; ?>
+        </div>
+    </div>
+    <?php endif; ?>
+
+    <?php if ($selectedPlan['plan'] === 'Gold' || $selectedPlan['plan'] === 'Platinum'): ?>
+    <div class="tool-card">
+        <h6>Resident Memory</h6>
+        <div id="resmem-list" class="mb-3" style="max-height: 120px; overflow-y: auto;">
+            <?php if ($showFileList): ?>
+                <?php foreach ($files as $file): ?>
+                    <span class="file-link" data-file="<?php echo htmlspecialchars($file); ?>"><?php echo htmlspecialchars($file); ?></span>
+                <?php endforeach; ?>
+            <?php else: ?>
+                <div class="small text-muted" style="font-size: 0.75rem;">No saved files yet.</div>
+            <?php endif; ?>
+        </div>
+        <div class="progress mb-1" style="height: 4px;">
+            <?php $percent = min(100, ($totalSizeMB / $maxResidentMemoryMB) * 100); ?>
+            <div class="progress-bar bg-accent" role="progressbar" style="width: <?php echo $percent; ?>%"></div>
+        </div>
+        <div class="d-flex justify-content-between text-muted" style="font-size: 0.65rem;">
+            <span>Used: <?php echo round($totalSizeMB, 2); ?> MB</span>
+            <span>Limit: <?php echo $maxResidentMemoryMB; ?> MB</span>
+        </div>
+    </div>
+    <?php endif; ?>
+    <?php
 }
 ?>
-</select>
-</section>
-<section class="chathistory">
-<div id="chat-container"></div>
-</section>
-</div>
 
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-// Rendere le proprietà disponibili in JavaScript
-const config = <?php echo json_encode($chatbotConfig); ?>;
+    const apikey = <?php echo json_encode($chatbotKey); ?>;
+    const chatbotName = <?php echo json_encode($chatbotName); ?>;
+    const maxChars = <?php echo ($selectedPlan['plan'] === 'Gold') ? 15000 : (($selectedPlan['plan'] === 'Platinum') ? 30000 : 15000); ?>;
+    let chatMemory = [];
+    let uploadedFileUrl = "";
+    let uploadedImgUrl = "";
 
-function verifyEnter(event) {
-if (event.keyCode === 13) {
-event.preventDefault();
-sendMessage();
-}
-}
+    // --- Chat Engine ---
 
-// Modifica la visibilità del div in base alla presenza dei file
-const showFileList = <?php echo json_encode($showFileList); ?>;
-if (!showFileList) {
-document.getElementById('resmem').style.display = 'none';
-}  
+    async function decrementCredits() {
+        const res = await fetch(window.location.href, { method: 'POST' });
+        const data = await res.json().catch(() => null);
+        if (data?.status === 'success') {
+            document.getElementById('creditsCount').textContent = data.credits_count;
+        } else if (data?.status === 'error') {
+            throw new Error(data.message);
+        }
+    }
+
+    function showMessage(sender, message, isHtml = false) {
+        const container = document.getElementById('chat-container');
+        const bubble = document.createElement('div');
+        bubble.className = `message-bubble ${sender === 'Guest' ? 'message-guest' : 'message-bot'}`;
         
-// Aggiungi evento click a tutti gli elementi con classe file-link
-document.querySelectorAll('.file-link').forEach(function(element) {
-element.addEventListener('click', function() {
-// Ottieni il nome del file selezionato
-const filename = this.getAttribute('data-file');
+        const header = document.createElement('div');
+        header.className = 'fw-bold small mb-1 ' + (sender === 'Guest' ? 'text-white-50' : 'accent');
+        header.textContent = sender;
+        bubble.appendChild(header);
 
-// Carica il contenuto del file tramite AJAX
-loadChatContent(filename);
-});
-});
+        const content = document.createElement('div');
+        if (isHtml) {
+            content.innerHTML = message;
+        } else {
+            // Simple markdown-ish code blocks
+            if (message.includes('```')) {
+                content.innerHTML = message.replace(/```([\s\S]*?)```/g, '<pre class="bg-dark text-white p-2 rounded my-2 small" style="white-space: pre-wrap;"><code>$1</code></pre>');
+            } else {
+                content.textContent = message;
+            }
+        }
+        bubble.appendChild(content);
 
-function loadChatContent(filename) {
-const xhr = new XMLHttpRequest();
-xhr.open("GET", "resident_memory/" + filename, true);
-xhr.onreadystatechange = function () {
-if (xhr.readyState === 4 && xhr.status === 200) {
-// Imposta il contenuto del chat-container
-document.getElementById('chat-container').innerHTML = xhr.responseText;
-}
-};
-xhr.send();
-}        
-        
-//Initialize memory array at each page reload        
-let chatMemory = [];        
-// Function to create context memory
-function createMemory(messages) {
-    const memory = [];
-    for (const msg of messages) {
-        memory.push({ role: msg.role, content: msg.content });
-    }
-    return memory;
-}
-
-// Function to send message
-async function sendMessage() {
-    const inputElement = document.getElementById('user-input');
-    const userInput = inputElement.value.trim();
-
-    if (userInput !== '') {
-        showMessage("Guest", userInput);
-        chatMemory = await getChatGPTResponse(userInput, chatMemory);
-        inputElement.value = '';
-    }
-        
-// Chiamata al server per aggiornare i crediti
-try {
-const response = await fetch(window.location.href, { // Invia la richiesta allo stesso file PHP
-method: 'POST',
-headers: {
-'Content-Type': 'application/json'
-}
-});
-
-const data = await response.json();
-if (data.status === 'success') {
-console.log("Crediti rimanenti:", data.credits_count);
-} else {
-console.error(data.message);
-alert(data.message); // Facoltativo: avvisare l'utente se non ci sono più crediti
-}
-} catch (error) {
-console.error("Errore nella comunicazione con il server:", error);
-}        
-}
-
-// Function to show message in chat
-function showMessage(sender, message) {
-    const chatContainer = document.getElementById('chat-container');
-    const chatSection = document.querySelector('.chathistory');
-    const typingIndicator = document.getElementById('typing-indicator');
-
-    // Remove "Typing in progress..." message when ChatGPT writes the response
-    if (typingIndicator && sender !== 'Guest') {
-        chatContainer.removeChild(typingIndicator);
-    }
-
-    // Create new message element
-    const messageElement = document.createElement('div');
-    messageElement.innerText = `${sender}: ${message}`;
-
-    // Add correct class depending on sender
-    if (sender === 'Guest') {
-        messageElement.classList.add('user-message');
-    } else {
-        messageElement.classList.add('chatbot-message');
-
-        // Add link to copy message content
-        const copyLink = document.createElement('button');
-        copyLink.classList.add('btnShimmer'); 
-        copyLink.innerText = 'Copy';
-        copyLink.style.float = 'right';
-        copyLink.addEventListener('click', function (event) {
-            event.preventDefault();
-            const text = message;
-            const input = document.createElement('input');
-            input.value = text;
-            document.body.appendChild(input);
-            input.select();
-            document.execCommand('copy');
-            document.body.removeChild(input);
-        });
-
-        messageElement.appendChild(copyLink);
-    }
-
-    chatContainer.appendChild(messageElement);
-    chatSection.scrollTop = chatSection.scrollHeight;
-}
-        
-// Function to show message in chat
-function showMessageHTML(sender, message) {
-    const chatContainer = document.getElementById('chat-container');
-    const chatSection = document.querySelector('.chathistory');
-    const typingIndicator = document.getElementById('typing-indicator');
-
-    // Remove "Typing in progress..." message when ChatGPT writes the response
-    if (typingIndicator && sender !== 'Guest') {
-        chatContainer.removeChild(typingIndicator);
-    }
-
-    // Create new message element
-    const messageElement = document.createElement('div');
-    messageElement.innerHTML = `${sender}: ${message}`;
-
-    // Add correct class depending on sender
-    if (sender === 'Guest') {
-        messageElement.classList.add('user-message');
-    } else {
-        messageElement.classList.add('chatbot-message-vertical');
-
-        // Add link to copy message content
-        const copyLink = document.createElement('button');
-        copyLink.classList.add('btnShimmer'); 
-        copyLink.innerText = 'Copy';
-        copyLink.style.float = 'right';
-        copyLink.addEventListener('click', function (event) {
-            event.preventDefault();
-            const text = message;
-            const input = document.createElement('input');
-            input.value = text;
-            document.body.appendChild(input);
-            input.select();
-            document.execCommand('copy');
-            document.body.removeChild(input);
-        });
-
-        messageElement.appendChild(copyLink);
-    }
-
-    chatContainer.appendChild(messageElement);
-    chatSection.scrollTop = chatSection.scrollHeight;
-}
-        
-
-// Function to get ChatGPT response
-async function getChatGPTResponse(userInput, chatMemory = []) {
-    const chatContainer = document.getElementById('chat-container');
-
-    const typingIndicator = document.createElement('p');
-    typingIndicator.id = 'typing-indicator';
-    typingIndicator.innerHTML = '<img src="preloader.gif" class="preloader" alt="Loading...">';
-    chatContainer.appendChild(typingIndicator);
-
-    try {
-        const response = await fetch('https://api.openai.com/v1/chat/completions', {
-            method: 'POST',
-            headers: {
-        "Content-Type": "application/json",
-        "Authorization": "Bearer <?php echo $chatbotKey; ?>"
-            },
-            body: JSON.stringify({
-                "model": "gpt-4.1-nano",
-                "messages": [
-                    ...chatMemory,
-                    {"role": "user", "content": userInput}
-                ]
-            })
-        });
-
-        if (!response.ok) {
-            throw new Error('Invalid API request');
+        // Copy button for bot messages
+        if (sender !== 'Guest') {
+            const copyBtn = document.createElement('button');
+            copyBtn.className = 'btn btn-sm btn-light border copy-btn';
+            copyBtn.innerHTML = 'Copy';
+            copyBtn.onclick = () => {
+                navigator.clipboard.writeText(message);
+                copyBtn.textContent = 'Copied!';
+                setTimeout(() => copyBtn.textContent = 'Copy', 2000);
+            };
+            bubble.appendChild(copyBtn);
         }
 
-        const data = await response.json();
-
-        if (!data.choices || !data.choices.length || !data.choices[0].message || !data.choices[0].message.content) {
-            throw new Error('Invalid API response');
-        }
-
-        const chatGPTResponse = data.choices[0].message.content.trim();
-        var cleanResponse = chatGPTResponse.replace(/(```html|```css|```javascript|```php|```python)(.*?)/gs, '$2');
-        cleanResponse = cleanResponse.replace(/```/g, "");
-        showMessage("<?php echo $chatbotName; ?>", cleanResponse);
-
-        // Add current response to context memory
-        chatMemory.push({ role: 'user', content: userInput });
-        chatMemory.push({ role: 'assistant', content: cleanResponse });
-
-        // Return updated context memory
-        return chatMemory;
-    } catch (error) {
-        console.error(error);
+        container.appendChild(bubble);
+        container.scrollTop = container.scrollHeight;
     }
-}
 
-
-        
-const maxChars = <?php echo ($selectedPlan['plan'] === 'Gold') ? 15000 : (($selectedPlan['plan'] === 'Platinum') ? 30000 : 15000); ?>;
-
-// gestione del caricamento e analisi del file
-async function analyzeFile(url) {
-chatMemory = []; // reset memory
-try {
-const fileURL = "<?php echo getFullPath(); ?>" + '/' + url;
-console.log(fileURL);
-const response = await fetch(fileURL);
-if (response.ok) {
-const fileContent = await response.text();
-if (fileContent.length <= maxChars) {
-console.log(fileContent);
-chatMemory = await resetAndAnalyze(fileContent, chatMemory);
-} else {
-alert(
-"The file content exceeds the maximum allowed characters (" + maxChars + "). The request will be discarded."
-);
-}
-} else {
-console.error("Error accessing the content of file: ", fileURL);
-}
-} catch (error) {
-console.error("An error occurred:", error);
-}
-}
-
-async function resetAndAnalyze(fileContent, chatMemory) {
-  return await getChatGPTResponseTXT(
-    "Summarize this content: " + fileContent,
-    chatMemory
-  );
-}  
-
-// Funzione per ottenere la risposta da ChatGPT sui files di testo
-async function getChatGPTResponseTXT(fileContent, chatMemory = []) {
-     const chatContainer = document.getElementById('chat-container');    
-    const typingIndicator = document.createElement('p');
-    typingIndicator.id = 'typing-indicator';
-    
-    typingIndicator.innerHTML = '<img src="preloader.gif" class="preloader" alt="Loading...">';
-    chatContainer.appendChild(typingIndicator);     
-try {
-
-
-response = await fetch('https://api.openai.com/v1/chat/completions', {
-method: 'POST',
-headers: {
-"Content-Type": "application/json",
-"Authorization": "Bearer <?php echo $chatbotKey; ?>"
-},
-            body: JSON.stringify({
-                "model": "gpt-4.1-nano",
-                "messages": [
-...chatMemory.map(item => ({...item})),
-{"role": "user", "content": "Summarize this file: " + fileContent}
-]
-
-})
-});
-
-if (!response.ok) {
-throw new Error('Errore in API request');
-console.log(response);
-}
-
-const data = await response.json();
-
-if (
-!data.choices ||
-!data.choices.length ||
-!data.choices[0].message ||
-!data.choices[0].message.content
-) {
-throw new Error('Invalid API response');
-}
-
-const chatGPTResponse = data.choices[0].message.content;
-
-        console.log(chatGPTResponse);
-showMessage("<?php echo $chatbotName; ?>", chatGPTResponse);
-
-        chatMemory.push({ role: 'user', content: fileContent });
-        chatMemory.push({ role: 'assistant', content: chatGPTResponse });
-
-        return chatMemory;        
-} catch (error) {
-console.error(error);
-
-alert('An error occurred during the request. Retry later.');        
-}
-}
-        
-// VISION
-        
-async function submitImage(imgUrl) {
-        const urlCorrente = window.location.href;
-        const urlDominio = urlCorrente.substring(0, urlCorrente.lastIndexOf('/') + 1);
-  return await getChatGPTResponseIMG(urlDominio + imgUrl, chatMemory);
-} 
-
-// Function to get ChatGPT response
-async function getChatGPTResponseIMG(fileUrl, chatMemory) {
-        
-    const chatContainer = document.getElementById('chat-container');
-    const typingIndicator = document.createElement('p');
-    typingIndicator.id = 'typing-indicator';
-    typingIndicator.innerHTML = '<img src="preloader.gif" class="preloader" alt="Loading...">';
-    chatContainer.appendChild(typingIndicator);
-
-    try {
-        const response = await fetch('https://api.openai.com/v1/chat/completions', {
-            method: 'POST',
-            headers: {
-        "Content-Type": "application/json",
-        "Authorization": "Bearer <?php echo $chatbotKey; ?>"
-            },
-            body: JSON.stringify({
-model: "gpt-4.1-nano",
-messages: [
-...chatMemory.map((item) => ({ ...item })),
-{
-role: "user",
-content: [
-{
-type: "text",
-text: "What’s in this image?"
-},
-{
-type: "image_url",
-image_url: {
-url: fileUrl // Usa l'URL fornito come fileUrl
-}
-}
-]
-}
-],
-max_tokens: 400 // Includi il limite dei token se necessario
-})
-});
-
-        if (!response.ok) {
-            throw new Error('Invalid API request');
-        }
-
-        const data = await response.json();
-
-        if (!data.choices || !data.choices.length || !data.choices[0].message || !data.choices[0].message.content) {
-            throw new Error('Invalid API response');
-        }
-
-        const chatGPTResponse = data.choices[0].message.content;
-showMessageHTML(
-"<?php echo $chatbotName; ?>",
-"Here is a summary of the analyzed image: <br>" +
-"<div style='margin: 10px 0;'><img src='" + fileUrl + "' alt='Analyzed Image' style='max-width: 200px; height: auto; border-radius: 8px; box-shadow: 0 2px 6px <?php echo $styleColor; ?>;'></div>" +  
-chatGPTResponse + "<br>Now you can ask me questions about the content.<br>"
-);
-
-       // updates memory with the received response
-chatMemory.push({ role: "user", content: fileUrl }); // Assicurati di inserire il contenuto giusto qui
-chatMemory.push({ role: "assistant", content: chatGPTResponse });
-
-
-        // Return updated context memory
-        return chatMemory;
-    } catch (error) {
-        console.error(error);
+    function showTyping() {
+        const container = document.getElementById('chat-container');
+        const typing = document.createElement('div');
+        typing.id = 'typing-indicator';
+        typing.className = 'message-bubble message-bot loading-dots';
+        typing.innerHTML = 'Assistant is thinking<span>.</span><span>.</span><span>.</span>';
+        container.appendChild(typing);
+        container.scrollTop = container.scrollHeight;
     }
-}
-        
-// END VISION        
-        
-        
-        
-        
-        
-        
-        // Funzione per ottenere il valore selezionato dalla select e aggiornare la struttura
-function updateStructure() {
-  var selectElement = document.getElementById("selectOption");
-  var selectedValue = selectElement.value;
-        console.log (getDefinition(selectedValue));
-  chatMemory = createMemory([
-    {
-      role: "system",
-      content: getDefinition(selectedValue)
+
+    function hideTyping() {
+        const el = document.getElementById('typing-indicator');
+        if (el) el.remove();
+    }
+
+    async function sendMessage() {
+        const input = document.getElementById('user-input');
+        const text = input.value.trim();
+        if (!text) return;
+
+        input.value = '';
+        showMessage('Guest', text);
+        showTyping();
+        document.getElementById('errorBox').classList.add('d-none');
+
+        try {
+            await decrementCredits();
+            chatMemory.push({ role: 'user', content: text });
             
+            const response = await fetch('https://api.openai.com/v1/chat/completions', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${apikey}`
+                },
+                body: JSON.stringify({
+                    model: 'gpt-4o-mini',
+                    messages: chatMemory,
+                    temperature: 0.7,
+                    max_tokens: 2000
+                })
+            });
+
+            const data = await response.json();
+            hideTyping();
+
+            if (!response.ok) throw new Error(data?.error?.message || 'OpenAI API Error');
+
+            const aiMsg = data.choices[0].message.content.trim();
+            showMessage(chatbotName, aiMsg);
+            chatMemory.push({ role: 'assistant', content: aiMsg });
+
+            // Manage memory
+            if (chatMemory.length > 20) chatMemory = [chatMemory[0], ...chatMemory.slice(-19)];
+
+        } catch (err) {
+            hideTyping();
+            document.getElementById('errorBox').textContent = err.message;
+            document.getElementById('errorBox').classList.remove('d-none');
+        }
     }
-  ]);
+
+    // --- Personality Logic ---
+
+    function updateStructure() {
+        const val = document.getElementById('selectOption').value;
+        const def = getDefinition(val);
+        chatMemory = [{ role: 'system', content: def }];
         
-}
+        const container = document.getElementById('chat-container');
+        const info = document.createElement('div');
+        info.className = 'text-center my-3 small text-muted text-uppercase fw-bold letter-spacing-1';
+        info.textContent = '--- Personality Switched to ' + document.getElementById('selectOption').options[document.getElementById('selectOption').selectedIndex].text + ' ---';
+        container.appendChild(info);
+        container.scrollTop = container.scrollHeight;
+    }
 
+    function getDefinition(val) {
+        const defs = {
+            '01': "You are a full stack developer. Answer only software/web related questions.",
+            '02': "You are an AI expert. Answer only AI related questions.",
+            '03': "You are Alex, a music expert with deep knowledge of 80s/90s pop and rock.",
+            '04': "You are a movie expert who knows plots, cast, and styles perfectly.",
+            '05': "You are a multi-language translator. Help with translations and explain idioms.",
+            '06': "You are a XVII century poet. Always answer in rhyme with period-appropriate lexicon."
+        };
+        return defs[val] || "You are a helpful conversational AI.";
+    }
 
-function getDefinition(selectedValue) {
-  switch (selectedValue) {
-    case "01":
-      return "You are a full stack developer working for a software agency. You will only answer to question related to software or websites development.";
-    case "02":
-      return "You are a, ArtificialINtelligence expert working for a LLM models Agency. You will only answer to question related to AI and its applications.";
-    case "03":
-      return "You are a generic music expert who writes for a fictional magazine called Music Style, your name is Alex, and you have a wide and deep knowledge on all genres of music, particularly pop and rock of the '80s and '90s.";
-    case "04":
-      return "You are a movie expert, you love sci-fi and action movies, but your knowledge encompasses every kind of movies; you have a huge collection of movies and you can give your opinion on movies, their plots, and style. You can also provide biographies of the cast of every movie.";
-    case "05":
-      return "You are a multi languages skilled translator, and you can provide translation to and from many langauges. You will use a teachy conversation style and you can also provide alternative translations including idiomatics and slangs.";
-    case "06":
-      return "You are a XVII century poet, and you will always try to answer in rhyme and with a language and lexicon coherent with your period.";
-    default:
-      return "You are a generic conversational Chatbot and you can answer about all topics. You will always suggest to select one of your multiple personalities to provide more detailled answers about specific topics.";
-  }
-}
+    // --- Analysis Logic ---
 
+    async function analyzeFile() {
+        if (!uploadedFileUrl) return;
+        showTyping();
+        try {
+            const fullUrl = "<?php echo getFullPath(); ?>/" + uploadedFileUrl;
+            const response = await fetch(fullUrl);
+            const content = await response.text();
+            
+            if (content.length > maxChars) {
+                throw new Error("File too large (max " + maxChars + " chars).");
+            }
 
-document.getElementById("selectOption").addEventListener("change", updateStructure); 
+            chatMemory.push({ role: 'user', content: "Analyze this file content: " + content });
+            const aiRes = await fetch('https://api.openai.com/v1/chat/completions', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apikey}` },
+                body: JSON.stringify({
+                    model: 'gpt-4o-mini',
+                    messages: chatMemory
+                })
+            });
+            const data = await aiRes.json();
+            hideTyping();
+            const summary = data.choices[0].message.content;
+            showMessage(chatbotName, "File Analysis Summary:\n" + summary);
+            chatMemory.push({ role: 'assistant', content: summary });
+        } catch (err) {
+            hideTyping();
+            alert(err.message);
+        }
+    }
 
-// Aggiungi un event listener al bottone "savetxt" per il clic
-var saveButtont = document.getElementById('savetxt');
-saveButtont.addEventListener('click', handleSaveButtontClick);
-        
-// Funzione che viene eseguita quando viene fatto clic sul bottone 
-function handleSaveButtontClick() {
-saveChatContentTxt();
-} 
-        
-// Aggiungi un event listener al bottone "savetxt" per il clic
-var saveButtony = document.getElementById('savetodisk');
-saveButtony.addEventListener('click', handleSaveButtonyClick);
+    async function getChatGPTResponseIMG() {
+        if (!uploadedImgUrl) return;
+        showTyping();
+        try {
+            const fullUrl = "<?php echo getFullPath(); ?>/" + uploadedImgUrl;
+            const res = await fetch('https://api.openai.com/v1/chat/completions', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apikey}` },
+                body: JSON.stringify({
+                    model: "gpt-4o-mini",
+                    messages: [
+                        ...chatMemory,
+                        {
+                            role: "user",
+                            content: [
+                                { type: "text", text: "What's in this image?" },
+                                { type: "image_url", image_url: { url: fullUrl } }
+                            ]
+                        }
+                    ],
+                    max_tokens: 500
+                })
+            });
+            const data = await res.json();
+            hideTyping();
+            const aiMsg = data.choices[0].message.content;
+            showMessage(chatbotName, `<div>Image Analysis:</div><img src="${fullUrl}" class="img-fluid rounded my-2 border shadow-sm" style="max-height: 200px" /><br>${aiMsg}`, true);
+            chatMemory.push({ role: 'assistant', content: aiMsg });
+        } catch (err) {
+            hideTyping();
+            alert(err.message);
+        }
+    }
 
-// Funzione che viene eseguita quando viene fatto clic sul bottone
-function handleSaveButtonyClick() {
-saveChatResMem();
-}        
-       
-        
-function saveChatContentTxt() {
-// Ottieni il contenuto del dizionario
-var chatContent = document.getElementById('chat-container').innerHTML;
+    // --- JQuery for Uploads ---
+    $(document).ready(function() {
+        $('#uploadBtn').click(function(e) {
+            e.preventDefault();
+            const formData = new FormData($('#txtUploadForm')[0]);
+            $('#feedback').text('Uploading...');
+            $.ajax({
+                url: 'upload.php',
+                type: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function(res) {
+                    const data = JSON.parse(res);
+                    if (data.status === "success") {
+                        uploadedFileUrl = data.url;
+                        $('#feedback').html('<span class="text-success">File uploaded!</span>');
+                        $('#analyzeBtn').prop('disabled', false);
+                    } else {
+                        $('#feedback').html('<span class="text-danger">Upload failed</span>');
+                    }
+                }
+            });
+        });
 
-// Rimuovi tutti i tag HTML e aggiungi un nuovo rigo dopo ogni elemento trovato
-chatContent = chatContent.replace(/<[^>]+>/g, '\n');
+        $('#vuploadBtn').click(function(e) {
+            e.preventDefault();
+            const formData = new FormData($('#imgUploadForm')[0]);
+            $('#vfeedback').text('Uploading...');
+            $.ajax({
+                url: 'vupload.php',
+                type: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function(res) {
+                    const data = JSON.parse(res);
+                    if (data.status === "success") {
+                        uploadedImgUrl = data.url;
+                        $('#vfeedback').html('<span class="text-success">Image uploaded!</span>');
+                        $('#vAnalyzeBtn').prop('disabled', false);
+                    } else {
+                        $('#vfeedback').html('<span class="text-danger">Upload failed</span>');
+                    }
+                }
+            });
+        });
 
-// Genera il nome del file basato sul timestamp attuale
-var currentTimestamp = new Date();
-var datetime = currentTimestamp.toISOString();
+        $('.file-link').click(function() {
+            const filename = $(this).data('file');
+            $.get("resident_memory/" + filename, function(data) {
+                $('#chat-container').html(data);
+                $('#sidebarMobile').offcanvas('hide');
+            });
+        });
+    });
 
-// Rimuovi i caratteri speciali dal nome del file
-var filename = 'chatsession_v' + datetime.replace(/[-:.]/g, '');
-        
-// Sostituisci tutti i < con <
-chatContent = chatContent.replace(/&lt;/g, '<');
+    // --- Export & Save ---
+    function saveChatContentTxt() {
+        let content = '';
+        $('#chat-container .message-bubble').each(function() {
+            const sender = $(this).find('.small.fw-bold').text();
+            const text = $(this).find('div:not(.small)').text().trim();
+            if (sender) content += `${sender}: ${text}\n\n`;
+        });
+        const blob = new Blob([content], { type: 'text/plain' });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = `chat_export_${Date.now()}.txt`;
+        a.click();
+    }
 
-// Sostituisci tutti i > con >
-chatContent = chatContent.replace(/&gt;/g, '>'); 
+    function saveChatResMem() {
+        const content = $('#chat-container').html();
+        const filename = 'chat_' + Date.now();
+        $.post("save_chat_resmem.php", { content: content, filename: filename }, function() {
+            alert("Chat saved to memory!");
+            location.reload();
+        });
+    }
 
-// Fa in modo che il testo del bottone non compaia nella chat salvata        
-chatContent = chatContent.replace('Copy', '');        
-
-// Crea un oggetto Blob per contenere il contenuto del dizionario
-var blob = new Blob([chatContent], {type: 'text/plain'});
-
-// Crea un URL oggetto per il blob
-var url = URL.createObjectURL(blob);
-
-// Crea un elemento di ancoraggio per il download
-var downloadLink = document.createElement('a');
-downloadLink.href = url;
-downloadLink.download = filename + '.txt';
-
-// Simula il click sull'elemento di ancoraggio per avviare il download
-downloadLink.click();
-
-// Rilascia il blob e l'URL oggetto dopo il download
-URL.revokeObjectURL(url);
-}
-     
-        
-function saveChatResMem() {
-// Ottieni il contenuto del dizionario
-var chatContent = document.getElementById('chat-container').innerHTML;
-// Fa in modo che il bottone non compaia nella chat salvata
-chatContent = chatContent.replace(/<button[^>]*>Copy<\/button>/g, '');        
-// Genera il nome del file basato sul timestamp attuale
-// Genera data e ora in formato 'YYYYMMDD_HHMMSS'
-var currentTimestamp = new Date();
-var year = currentTimestamp.getUTCFullYear();
-var month = String(currentTimestamp.getUTCMonth() + 1).padStart(2, '0'); // Aggiungi 1 al mese
-var day = String(currentTimestamp.getUTCDate()).padStart(2, '0');
-var hours = String(currentTimestamp.getUTCHours()).padStart(2, '0');
-var minutes = String(currentTimestamp.getUTCMinutes()).padStart(2, '0');
-var seconds = String(currentTimestamp.getUTCSeconds()).padStart(2, '0');
-
-var datetime = `${year}${month}${day}_${hours}${minutes}${seconds}`;
-
-// Rimuovi i caratteri speciali dal nome del file
-var filename = 'memoryfile' + datetime.replace(/[-:.]/g, '');
-
-// Effettua una chiamata AJAX per inviare dati al PHP
-var xhr = new XMLHttpRequest();
-xhr.open("POST", "save_chat_resmem.php", true);
-xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
-
-xhr.onreadystatechange = function () {
-if (xhr.readyState == 4 && xhr.status == 200) {
-alert("Chat saved to resident memory!");
-}
-};
-
-// Invia i dati della chat e il nome del file
-xhr.send("content=" + encodeURIComponent(chatContent) + "&filename=" + encodeURIComponent(filename));
-}        
-        
+    // Init
+    document.getElementById('selectOption').addEventListener('change', updateStructure);
+    document.getElementById('user-input').addEventListener('keydown', e => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            sendMessage();
+        }
+    });
+    updateStructure();
 </script>
 
 </body>
