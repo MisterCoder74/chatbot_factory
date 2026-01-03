@@ -1,63 +1,34 @@
 <?php
-session_start();
-header('Content-Type: application/json');
+function uploadFile() {
+    $targetDir = "./upload/";
 
-if (!isset($_SESSION['user_id'])) {
-    echo json_encode(['status' => 'error', 'message' => 'User not logged in']);
-    exit;
+    // Controlla se la cartella upload esiste e, in caso contrario, creala
+    if (!is_dir($targetDir)) {
+        mkdir($targetDir, 0755, true);
+    }
+
+    $fileType = strtolower(pathinfo($_FILES["file"]["name"], PATHINFO_EXTENSION));
+    $originalFileName = basename($_FILES["file"]["name"]);
+    $targetFile = $targetDir . $originalFileName;
+    $uploadOk = 1;
+
+    // Verifica se il file è un documento TXT
+    if ($fileType != "txt" || $fileType != "html" || $fileType != "css" || $fileType != "js" || $fileType != "json" || $fileType != "php" || $fileType != "py" ||  $fileType != "vb" || $fileType != "ini" || $fileType != "cpp") {
+        echo "File type is not allowed.";
+        $uploadOk = 0;
+    }
+
+    // Verifica se ci sono errori durante il caricamento
+    if ($uploadOk == 0) {
+        echo "<b>Your file was NOT uploaded.</b><br>Make sure the file is an allowed format and has less than 15000 chars.";
+    } else {
+        if (move_uploaded_file($_FILES["file"]["tmp_name"], $targetFile)) {
+            echo json_encode(["status" => "success", "url" => $targetFile]);
+        } else {
+            echo "An error occurred.";
+        }
+    }
 }
 
-if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    echo json_encode(['status' => 'error', 'message' => 'Invalid request method']);
-    exit;
-}
-
-if (!isset($_FILES['image'])) {
-    echo json_encode(['status' => 'error', 'message' => 'Missing image file']);
-    exit;
-}
-
-$file = $_FILES['image'];
-if (($file['error'] ?? UPLOAD_ERR_OK) !== UPLOAD_ERR_OK) {
-    echo json_encode(['status' => 'error', 'message' => 'Upload error']);
-    exit;
-}
-
-$maxBytes = 5 * 1024 * 1024;
-if (($file['size'] ?? 0) > $maxBytes) {
-    echo json_encode(['status' => 'error', 'message' => 'File too large (max 5MB)']);
-    exit;
-}
-
-$tmp = $file['tmp_name'] ?? null;
-if (!$tmp || !is_file($tmp)) {
-    echo json_encode(['status' => 'error', 'message' => 'Invalid upload']);
-    exit;
-}
-
-$info = @getimagesize($tmp);
-if ($info === false) {
-    echo json_encode(['status' => 'error', 'message' => 'Invalid image file']);
-    exit;
-}
-
-$mime = $info['mime'] ?? '';
-$allowed = ['image/png', 'image/jpeg', 'image/webp'];
-if (!in_array($mime, $allowed, true)) {
-    echo json_encode(['status' => 'error', 'message' => 'Unsupported image format']);
-    exit;
-}
-
-$raw = @file_get_contents($tmp);
-if ($raw === false) {
-    echo json_encode(['status' => 'error', 'message' => 'Unable to read uploaded file']);
-    exit;
-}
-
-$b64 = base64_encode($raw);
-
-echo json_encode([
-    'status' => 'success',
-    'mime' => $mime,
-    'data_url' => 'data:' . $mime . ';base64,' . $b64
-]);
+uploadFile();
+?>
