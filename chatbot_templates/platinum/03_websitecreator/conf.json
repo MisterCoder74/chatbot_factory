@@ -1,13 +1,14 @@
 [
     {
-        "chatbot_id": "a4a4a4",
-        "credits_count": 10000,
+        "chatbot_id": "c3c3c3",
+        "credits_count": 15000,
         "background_color": "#ffffff",
-        "style_color": "#0000ff",
+        "style_color": "#00aa00",
         "text_color": "#000000",
-        "img_url": "conv_chatbot.jpg",
-        "header": "Welcome to your Platinum Chatbot!",
-        "chatbot_name": "Chatbot",
-        "chatbot_apikey": ""
+        "img_url": "website_composer.jpg",
+        "header": "Website Composer - Fullstack Developer Assistant",
+        "chatbot_name": "Website Composer",
+        "chatbot_apikey": "",
+        "type": "code_generator"
     }
 ]

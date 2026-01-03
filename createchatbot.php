@@ -52,16 +52,16 @@ try {
             $files_to_copy = ['conf.json', 'image_generator_chatbot.jpg', 'default.png', 'info.txt', 'preloader.gif'];                
         } elseif ($chatbot_type === 'Website Composer Chatbot') {
             $source_directory = './chatbot_templates/platinum/03_websitecreator/';
-            $files_to_copy = ['conf.json', 'seo_chatbot.jpg', 'default.png', 'info.txt'];                
+            $files_to_copy = ['conf.json', 'website_composer.jpg', 'default.png', 'info.txt', 'preloader.gif'];
         } elseif ($chatbot_type === 'Image Rebuilder Chatbot') {
             $source_directory = './chatbot_templates/platinum/04_imagerebuilder/';
-            $files_to_copy = ['conf.json', 'seo_chatbot.jpg', 'default.png', 'info.txt'];                
+            $files_to_copy = ['conf.json', 'image_rebuilder.jpg', 'default.png', 'info.txt', 'preloader.gif', 'upload.php'];
         } elseif ($chatbot_type === 'Content Creation Chatbot') {
             $source_directory = './chatbot_templates/platinum/05_contentcreator/';
-            $files_to_copy = ['conf.json', 'content_chatbot.jpg', 'default.png', 'info.txt', 'preloader.gif', 'upload.php', 'vupload.php', 'save_chat_resmem.php'];                
+            $files_to_copy = ['conf.json', 'content_creator.jpg', 'default.png', 'info.txt', 'preloader.gif'];
         } elseif ($chatbot_type === 'SEO Optimizer Chatbot') {
             $source_directory = './chatbot_templates/platinum/06_seooptimizer/';
-            $files_to_copy = ['conf.json', 'seo_chatbot.jpg', 'default.png', 'info.txt', 'preloader.gif', 'upload.php', 'vupload.php', 'save_chat_resmem.php'];
+            $files_to_copy = ['conf.json', 'seo_optimizer.jpg', 'default.png', 'info.txt', 'preloader.gif', 'fetch_webpage.php'];
         } else {
             throw new Exception('Tipo di chatbot non valido');
         }
