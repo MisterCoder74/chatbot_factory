@@ -1,49 +1,119 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Advanced Persona Form</title>
-<style>
-body {
-font-family: Arial, sans-serif;
-margin: 20px;
-box-sizing: border-box;        
-}
-form {
-padding: .25rem;        
-width: 600px;
-margin: auto;
-box-sizing: border-box;        
-}
-label {
-display: block;
-margin-top: 12px;
-}
-input, select, textarea {
-width: 95%;
-padding: 8px;
-margin-top: 5px;
-}
-.form-group {
-margin-bottom: 15px;
-}
-button {
-margin-top: .25rem;        
-padding: 10px 15px;
-background-color: #4CAF50;
-color: white;
-border: none;
-cursor: pointer;
-}
-button:hover {
-background-color: #45a049;
-}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced Persona Form</title>
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+    
+    <style>
+        :root {
+            --cb-bg: #ffffff;
+            --cb-text: #000000;
+            --cb-accent: #0000ff;
+        }
+
+        body {
+            background: var(--cb-bg);
+            color: var(--cb-text);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .accent { color: var(--cb-accent); }
+        .btn-accent { background: var(--cb-accent); border-color: var(--cb-accent); color: #fff; }
+        .btn-accent:hover { filter: brightness(0.95); color: #fff; }
+
+        .navbar { 
+            z-index: 1030; 
+            background: rgba(255,255,255,0.9); 
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(0,0,0,0.08);
+        }
+
+        main {
+            flex: 1;
+            padding: 2rem 0;
+        }
+
+        .form-container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        fieldset {
+            background: #fff;
+            border: 1px solid rgba(0,0,0,0.08);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+        }
+
+        legend {
+            font-weight: 600;
+            font-size: 1.1rem;
+            color: var(--cb-accent);
+            padding: 0 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .form-control, .form-select {
+            border: 1px solid rgba(0,0,0,0.1);
+            border-radius: 8px;
+            padding: 0.75rem;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        .form-control:focus, .form-select:focus {
+            border-color: var(--cb-accent);
+            box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.15);
+        }
+
+        textarea.form-control {
+            resize: vertical;
+            min-height: 120px;
+        }
+
+        .char-counter {
+            font-size: 0.875rem;
+            color: #6c757d;
+        }
+
+        .previous-address {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .previous-address h4 {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--cb-accent);
+            margin-bottom: 1rem;
+        }
+    </style>
 </head>
 <body>
 
-<h1>Persona Information Advanced Form</h1>
+<nav class="navbar navbar-expand-lg border-bottom shadow-sm">
+    <div class="container-fluid px-4">
+        <div class="d-flex align-items-center gap-3">
+            <div>
+                <div class="fw-bold lh-1">Advanced Persona Setup</div>
+                <div class="small text-secondary mt-1" style="font-size: 0.75rem;">Configure your AI persona</div>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<main>
+    <div class="container">
+        <div class="form-container">
 
 <form action="save_advanced_persona.php" method="POST" enctype="multipart/form-data" onsubmit="return validateForm()">
 <fieldset>
@@ -88,134 +158,168 @@ background-color: #45a049;
 <label for="currentaddress">Current Address:</label>
 <input type="text" id="currentaddress" name="currentaddress">
 </div>
-<div class="form-group">
-<label for="currentaddressmovedate">Current Address Move Date:</label>
-<input type="date" id="currentaddressmovedate" name="currentaddressmovedate">
-</div>
-</fieldset>           
+<div class="mb-3">
+                            <label for="currentaddressmovedate" class="form-label">Current Address Move Date</label>
+                            <input type="date" class="form-control" id="currentaddressmovedate" name="currentaddressmovedate">
+                        </div>
+                    </fieldset>
+
+                    <fieldset>
+                        <legend>Persona Previous Addresses (dates can be approximative)</legend> 
+
+                        <div class="previous-address">
+                            <h4>Address 1</h4>
+                            <div class="mb-3">
+                                <label for="address1" class="form-label">Address</label>
+                                <input type="text" class="form-control" id="address1" name="address1" placeholder="Enter Address">
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="address1_from" class="form-label">From Date</label>
+                                    <input type="date" class="form-control" id="address1_from" name="address1_from">
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="address1_to" class="form-label">To Date</label>
+                                    <input type="date" class="form-control" id="address1_to" name="address1_to">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="previous-address">
+                            <h4>Address 2</h4>
+                            <div class="mb-3">
+                                <label for="address2" class="form-label">Address</label>
+                                <input type="text" class="form-control" id="address2" name="address2" placeholder="Enter Address">
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="address2_from" class="form-label">From Date</label>
+                                    <input type="date" class="form-control" id="address2_from" name="address2_from">
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="address2_to" class="form-label">To Date</label>
+                                    <input type="date" class="form-control" id="address2_to" name="address2_to">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="previous-address">
+                            <h4>Address 3</h4>
+                            <div class="mb-3">
+                                <label for="address3" class="form-label">Address</label>
+                                <input type="text" class="form-control" id="address3" name="address3" placeholder="Enter Address">
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="address3_from" class="form-label">From Date</label>
+                                    <input type="date" class="form-control" id="address3_from" name="address3_from">
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="address3_to" class="form-label">To Date</label>
+                                    <input type="date" class="form-control" id="address3_to" name="address3_to">
+                                </div>
+                            </div>
+                        </div>
+                    </fieldset>        
 <br>
 <fieldset>
-<legend>Persona Previous Addresses (dates can be approximative)</legend> 
+                    <fieldset>
+                        <legend>Persona Current Relationship</legend> 
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label for="maritalstatus" class="form-label">Marital Status</label>
+                                <input type="text" class="form-control" id="maritalstatus" name="maritalstatus">
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label for="spousesurname" class="form-label">Partner Surname</label>
+                                <input type="text" class="form-control" id="spousesurname" name="spousesurname">
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label for="spouse" class="form-label">Partner Name</label>
+                                <input type="text" class="form-control" id="spouse" name="spouse">
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label for="spousebirthdate" class="form-label">Partner Birth Date</label>
+                                <input type="date" class="form-control" id="spousebirthdate" name="spousebirthdate" min="1950-01-01" max="2010-12-31">
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label for="spousebirthplace" class="form-label">Partner Birth Place</label>
+                                <input type="text" class="form-control" id="spousebirthplace" name="spousebirthplace">
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label for="spouseimg" class="form-label">Upload Spouse Image</label>
+                                <input type="file" class="form-control" id="spouseimg" name="spouseimg" accept="image/*">
+                            </div>
+                        </div>
+                    </fieldset> 
+                    <fieldset>
+                        <legend>Persona Background and Contacts</legend> 
+                        <div class="mb-3">
+                            <label for="biography" class="form-label">Bio and Background</label>
+                            <textarea class="form-control" id="biography" name="biography" rows="6" 
+                                placeholder="Insert as many info as you can (max 3500 chars)" 
+                                oninput="updateCharCount()"></textarea>
+                            <div class="char-counter mt-1">
+                                Remaining chars: <span id="charsleft">3500</span>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="website" class="form-label">Personal Website URL</label>
+                                <input type="url" class="form-control" id="website" name="website" 
+                                    placeholder="https://example.com">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="email" class="form-label">Personal Email</label>
+                                <input type="email" class="form-control" id="email" name="email" 
+                                    placeholder="youremail@example.com">
+                            </div>
+                        </div>
+                    </fieldset>
 
-<div class="previous-address">
-<h4>Address 1:</h4>
-<div class="form-group">
-<label for="address1">Address:</label>
-<input type="text" id="address1" name="address1" placeholder="Enter Address">
-</div>
-<div class="form-group">
-<label for="address1_from">From Date:</label>
-<input type="date" id="address1_from" name="address1_from">
-</div>
-<div class="form-group">
-<label for="address1_to">To Date:</label>
-<input type="date" id="address1_to" name="address1_to">
-</div>
-</div>
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-accent btn-lg">Submit Advanced Persona</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</main>
 
-<div class="previous-address">
-<h4>Address 2:</h4>
-<div class="form-group">
-<label for="address2">Address:</label>
-<input type="text" id="address2" name="address2" placeholder="Enter Address">
-</div>
-<div class="form-group">
-<label for="address2_from">From Date:</label>
-<input type="date" id="address2_from" name="address2_from">
-</div>
-<div class="form-group">
-<label for="address2_to">To Date:</label>
-<input type="date" id="address2_to" name="address2_to">
-</div>
-</div>
-
-<div class="previous-address">
-<h4>Address 3:</h4>
-<div class="form-group">
-<label for="address3">Address:</label>
-<input type="text" id="address3" name="address3" placeholder="Enter Address">
-</div>
-<div class="form-group">
-<label for="address3_from">From Date:</label>
-<input type="date" id="address3_from" name="address3_from">
-</div>
-<div class="form-group">
-<label for="address3_to">To Date:</label>
-<input type="date" id="address3_to" name="address3_to">
-</div>
-</div>
-</fieldset>        
-<br>
-<fieldset>
-<legend>Persona Current Relationship</legend> 
-<div class="form-group">
-<label for="maritalstatus">Marital Status:</label>
-<input type="text" id="maritalstatus" name="maritalstatus">
-</div>
-<div class="form-group">
-<label for="spousesurname">Partner Surname:</label>
-<input type="text" id="spousesurname" name="spousesurname">
-</div>
-<div class="form-group">
-<label for="spouse">Partner Name:</label>
-<input type="text" id="spouse" name="spouse">
-</div>
-<div class="form-group">
-<label for="spousebirthdate">Partner Birth Date:</label>
-<input type="date" id="spousebirthdate" name="spousebirthdate" min="1950-01-01" max="2010-12-31">
-</div>
-<div class="form-group">
-<label for="spousebirthplace">Partner Birth Place:</label>
-<input type="text" id="spousebirthplace" name="spousebirthplace">
-</div>
-<div class="form-group">
-<label for="spouseimg">Upload Spouse Image:</label>
-<input type="file" id="spouseimg" name="spouseimg" accept="image/*">
-</div>
-</fieldset> 
-<br>
-<fieldset>
-<legend>Persona Background and Contacts</legend> 
-<div class="form-group">
-<label for="biography">Bio and Background:</label>
-<textarea id="biography" name="biography" cols=14 rows=8 placeholder="Insert as many info as you can (max 3500 chars)" oninput="updateCharCount()"></textarea><br>
-Remaining chars: <span id="charsleft">3500</span>        
-</div>
-<div class="form-group">
-<label for="website">Personal Website URL:</label>
-<input type="url" id="website" name="website" placeholder="https://example.com">
-</div>
-
-<div class="form-group">
-<label for="email">Personal Email:</label>
-<input type="email" id="email" name="email" placeholder="youremail@example.com">
-</div>        
-
-</fieldset>         
-<button type="submit">Submit</button>
-</form>
-     
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-const maxChars = 3500; // numero massimo di caratteri
-const textarea = document.getElementById('biography');
-const charsLeftSpan = document.getElementById('charsleft');
+    const maxChars = 3500;
+    const textarea = document.getElementById('biography');
+    const charsLeftSpan = document.getElementById('charsleft');
 
-function updateCharCount() {
-const currentLength = textarea.value.length; // lunghezza corrente del testo
-const remainingChars = maxChars - currentLength; // caratteri rimanenti
-charsLeftSpan.textContent = remainingChars; // aggiorna il contatore
+    function updateCharCount() {
+        const currentLength = textarea.value.length;
+        const remainingChars = maxChars - currentLength;
+        charsLeftSpan.textContent = remainingChars;
 
-// Se la lunghezza supera il massimo, tronca il testo
-if (currentLength > maxChars) {
-textarea.value = textarea.value.substring(0, maxChars);
-charsLeftSpan.textContent = 0; // Se i caratteri diventano 0
-}
-}
+        if (currentLength > maxChars) {
+            textarea.value = textarea.value.substring(0, maxChars);
+            charsLeftSpan.textContent = 0;
+        }
         
-function validateForm() {
-// Add JavaScript validation here if needed
-return true; // return false to prevent form submission
-}
+        if (remainingChars <= 100) {
+            charsLeftSpan.classList.add('text-danger');
+        } else {
+            charsLeftSpan.classList.remove('text-danger');
+        }
+    }
+            
+    function validateForm() {
+        return true;
+    }
+
+    // Initialize char count
+    updateCharCount();
 </script>
+
 </body>
 </html>
